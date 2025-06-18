@@ -1,0 +1,221 @@
+# Recursive 플랫폼 로그 시스템 설정
+# LOG_SYSTEM_INTEGRATION_PLAN.md Phase 2.5 & 4.2 구현
+
+# 프로젝트 정보
+project_name: "recursive-platform"
+project_type: "webapp"
+project_version: "1.0.0"
+environment: "development"
+
+# 서버 설정
+server:
+  host: "localhost"
+  port: 8888
+  auto_start: true
+  auto_restart: true
+  max_restart_attempts: 5
+  restart_delay: 2000
+  startup_timeout: 30000
+  shutdown_timeout: 10000
+  python_path: "python"
+  verbose: true
+  debug: false
+
+# 저장소 설정
+storage:
+  db_path: "./logs/recursive_logs.db"
+  max_size_mb: 1000
+  max_days: 30
+  compression_enabled: true
+  backup_enabled: true
+  backup_interval: "24h"
+  vacuum_interval: "7d"
+
+# 수집기 설정
+collectors:
+  # MCP 호출 수집기
+  recursive_mcp:
+    enabled: true
+    auto_trace: true
+    log_requests: true
+    log_responses: true
+    include_params: true
+    exclude_methods: []
+    
+  # WebSocket 수집기
+  recursive_websocket:
+    enabled: true
+    log_connections: true
+    log_messages: false  # 너무 많은 로그 방지
+    log_errors: true
+    include_user_agent: true
+    
+  # AI 분석 수집기
+  recursive_ai:
+    enabled: true
+    log_python_calls: true
+    log_analysis_start: true
+    log_analysis_complete: true
+    include_input_size: true
+    include_result_size: true
+    
+  # HTTP 트래픽 수집기
+  recursive_http:
+    enabled: true
+    log_requests: true
+    log_responses: true
+    include_headers: false
+    capture_body: false
+    ignore_paths:
+      - "/health"
+      - "/favicon.ico"
+      - "/static"
+      - "/assets"
+    ignore_extensions:
+      - ".css"
+      - ".js"
+      - ".png"
+      - ".jpg"
+      - ".ico"
+    slow_request_threshold: 1000  # ms
+    
+  # 파일 시스템 수집기
+  recursive_filesystem:
+    enabled: false
+    watch_directories:
+      - "./src"
+      - "./modules"
+    ignore_patterns:
+      - "node_modules/**"
+      - ".git/**"
+      - "*.log"
+
+# 로그 레벨 설정
+logging:
+  default_level: "INFO"
+  levels:
+    recursive_server: "INFO"
+    mcp_calls: "INFO"
+    websocket: "INFO"
+    ai_analysis: "INFO"
+    http_traffic: "INFO"
+    error: "ERROR"
+    debug: "DEBUG"
+
+# 필터링 설정
+filters:
+  # 제외할 로그 패턴
+  exclude_patterns:
+    - "health check"
+    - "favicon.ico"
+    - "OPTIONS /"
+  
+  # 민감한 데이터 마스킹
+  sensitive_fields:
+    - "password"
+    - "token"
+    - "api_key"
+    - "secret"
+    - "authorization"
+  
+  # 로그 레이트 리미팅
+  rate_limiting:
+    enabled: true
+    max_logs_per_second: 100
+    burst_limit: 500
+
+# 알림 설정
+alerts:
+  enabled: true
+  
+  # 에러 급증 알림
+  error_spike:
+    enabled: true
+    threshold: 20
+    window_seconds: 300  # 5분
+    cooldown_seconds: 600  # 10분
+    
+  # 느린 요청 알림
+  slow_requests:
+    enabled: true
+    threshold_ms: 5000
+    count_threshold: 5
+    window_seconds: 300
+    
+  # 시스템 리소스 알림
+  system_resources:
+    enabled: true
+    memory_threshold_mb: 100
+    disk_threshold_mb: 500
+    
+  # 알림 채널
+  channels:
+    - type: "console"
+      enabled: true
+      level: "ERROR"
+    - type: "file"
+      enabled: true
+      path: "./logs/alerts.log"
+      level: "WARN"
+
+# 성능 설정
+performance:
+  # 배치 처리
+  batch_processing:
+    enabled: true
+    batch_size: 100
+    flush_interval: 5000  # ms
+    
+  # 메모리 관리
+  memory_management:
+    max_buffer_size: 1000
+    gc_interval: 60000  # ms
+    
+  # 인덱싱
+  indexing:
+    enabled: true
+    fields:
+      - "timestamp"
+      - "source"
+      - "level"
+      - "trace_id"
+
+# 개발 환경 설정
+development:
+  hot_reload: true
+  detailed_errors: true
+  include_stack_traces: true
+  log_sql_queries: false
+  mock_external_services: false
+
+# 프로덕션 환경 설정 (환경별 오버라이드)
+production:
+  server:
+    debug: false
+    verbose: false
+  storage:
+    max_size_mb: 5000
+    max_days: 90
+  logging:
+    default_level: "WARN"
+  alerts:
+    channels:
+      - type: "webhook"
+        enabled: true
+        url: "${ALERT_WEBHOOK_URL}"
+        level: "ERROR"
+
+# 테스트 환경 설정
+test:
+  server:
+    port: 8889
+    auto_start: false
+  storage:
+    db_path: "./test_logs/test_logs.db"
+    max_size_mb: 10
+    max_days: 1
+  collectors:
+    recursive_http:
+      enabled: false
+  alerts:
+    enabled: false 

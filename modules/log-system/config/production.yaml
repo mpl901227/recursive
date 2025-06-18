@@ -1,0 +1,281 @@
+# Recursive 로그 시스템 - 프로덕션 환경 설정
+# 보안, 성능, 안정성에 최적화
+
+# 기본 환경 정보
+environment: "production"
+debug_mode: false
+
+# 서버 설정 (프로덕션 최적화)
+server:
+  host: "${LOG_HOST:0.0.0.0}"
+  port: "${LOG_PORT:8888}"
+  auto_start: true
+  auto_restart: true
+  max_restart_attempts: 10  # 높은 복원력
+  restart_delay: 5000  # 안정적인 재시작
+  startup_timeout: 60000  # 충분한 시작 시간
+  shutdown_timeout: 30000  # Graceful shutdown
+  python_path: "${PYTHON_PATH:python3}"
+  verbose: false  # 성능 최적화
+  debug: false
+
+# 저장소 설정 (프로덕션용)
+storage:
+  db_path: "${LOG_DB_PATH:/var/log/recursive/prod_logs.db}"
+  max_size_mb: "${LOG_MAX_SIZE_MB:5000}"  # 대용량
+  max_days: "${LOG_RETENTION_DAYS:90}"  # 장기 보관
+  compression_enabled: true  # 공간 절약
+  backup_enabled: true
+  backup_interval: "${LOG_BACKUP_INTERVAL:12h}"
+  backup_path: "${LOG_BACKUP_PATH:/var/backups/recursive/logs}"
+  vacuum_interval: "7d"  # 주간 정리
+
+# 수집기 설정 (프로덕션 최적화)
+collectors:
+  recursive_mcp:
+    enabled: true
+    auto_trace: true
+    log_requests: true
+    log_responses: true
+    include_params: false  # 보안상 파라미터 제외
+    exclude_methods:
+      - "ping"
+      - "heartbeat"
+    
+  recursive_websocket:
+    enabled: true
+    log_connections: true
+    log_messages: false  # 성능상 메시지 로깅 제외
+    log_errors: true
+    include_user_agent: false  # 보안상 제외
+    
+  recursive_ai:
+    enabled: true
+    log_python_calls: true
+    log_analysis_start: true
+    log_analysis_complete: true
+    include_input_size: false  # 보안상 크기만 로깅
+    include_result_size: false
+    log_intermediate_steps: false  # 성능 최적화
+    
+  recursive_http:
+    enabled: true
+    log_requests: true
+    log_responses: false  # 성능 최적화
+    include_headers: false  # 보안상 헤더 제외
+    capture_body: false
+    ignore_paths:
+      - "/health"
+      - "/metrics"
+      - "/favicon.ico"
+      - "/robots.txt"
+      - "/static"
+      - "/assets"
+    ignore_extensions:
+      - ".css"
+      - ".js"
+      - ".png"
+      - ".jpg"
+      - ".gif"
+      - ".ico"
+      - ".svg"
+      - ".woff"
+      - ".woff2"
+      - ".ttf"
+    slow_request_threshold: "${SLOW_REQUEST_THRESHOLD:2000}"
+    
+  recursive_filesystem:
+    enabled: false  # 프로덕션에서는 비활성화
+
+# 로그 레벨 (프로덕션용 - 필수만)
+logging:
+  default_level: "${LOG_LEVEL:WARN}"
+  levels:
+    recursive_server: "${LOG_LEVEL:WARN}"
+    mcp_calls: "${LOG_LEVEL:INFO}"
+    websocket: "${LOG_LEVEL:WARN}"
+    ai_analysis: "${LOG_LEVEL:INFO}"
+    http_traffic: "${LOG_LEVEL:WARN}"
+    error: "ERROR"
+    debug: "OFF"  # 디버그 로그 완전 비활성화
+
+# 필터링 (프로덕션용 - 엄격)
+filters:
+  exclude_patterns:
+    - "health check"
+    - "favicon.ico"
+    - "OPTIONS /"
+    - "HEAD /"
+    - "/metrics"
+    - "/status"
+  
+  # 보안 강화된 민감 데이터 마스킹
+  sensitive_fields:
+    - "password"
+    - "passwd"
+    - "token"
+    - "api_key"
+    - "apikey"
+    - "secret"
+    - "authorization"
+    - "auth"
+    - "cookie"
+    - "session"
+    - "credit_card"
+    - "ssn"
+    - "email"
+    - "phone"
+  
+  # 엄격한 레이트 리미팅
+  rate_limiting:
+    enabled: true
+    max_logs_per_second: "${LOG_RATE_LIMIT:200}"
+    burst_limit: "${LOG_BURST_LIMIT:1000}"
+    blocked_sources_limit: 50
+
+# 알림 (프로덕션용 - 중요한 것만)
+alerts:
+  enabled: true
+  
+  error_spike:
+    enabled: true
+    threshold: "${ALERT_ERROR_THRESHOLD:50}"
+    window_seconds: "${ALERT_ERROR_WINDOW:300}"  # 5분
+    cooldown_seconds: "${ALERT_COOLDOWN:1800}"  # 30분
+    
+  slow_requests:
+    enabled: true
+    threshold_ms: "${ALERT_SLOW_THRESHOLD:5000}"
+    count_threshold: "${ALERT_SLOW_COUNT:10}"
+    window_seconds: 300
+    
+  system_resources:
+    enabled: true
+    memory_threshold_mb: "${ALERT_MEMORY_THRESHOLD:200}"
+    disk_threshold_mb: "${ALERT_DISK_THRESHOLD:1000}"
+    cpu_threshold_percent: "${ALERT_CPU_THRESHOLD:80}"
+    
+  # 프로덕션 알림 채널
+  channels:
+    - type: "file"
+      enabled: true
+      path: "${ALERT_LOG_PATH:/var/log/recursive/alerts.log}"
+      level: "ERROR"
+      rotation: true
+      max_size_mb: 100
+    - type: "webhook"
+      enabled: "${WEBHOOK_ALERTS_ENABLED:false}"
+      url: "${WEBHOOK_URL:}"
+      level: "ERROR"
+      timeout: 5000
+    - type: "email"
+      enabled: "${EMAIL_ALERTS_ENABLED:false}"
+      smtp_host: "${SMTP_HOST:}"
+      smtp_port: "${SMTP_PORT:587}"
+      username: "${SMTP_USER:}"
+      password: "${SMTP_PASS:}"
+      to: "${ALERT_EMAIL_TO:}"
+      level: "ERROR"
+
+# 성능 설정 (프로덕션 최적화)
+performance:
+  # 배치 처리로 성능 향상
+  batch_processing:
+    enabled: true
+    batch_size: "${LOG_BATCH_SIZE:500}"
+    flush_interval: "${LOG_FLUSH_INTERVAL:2000}"  # 2초
+    max_queue_size: "${LOG_MAX_QUEUE:5000}"
+    
+  # 메모리 관리 최적화
+  memory_management:
+    max_buffer_size: "${LOG_BUFFER_SIZE:2000}"
+    gc_interval: "${GC_INTERVAL:120000}"  # 2분
+    max_memory_mb: "${MAX_MEMORY_MB:300}"
+    
+  # 인덱싱 최적화
+  indexing:
+    enabled: true
+    fields:
+      - "timestamp"
+      - "source"
+      - "level"
+      - "trace_id"
+    concurrent_operations: "${INDEX_CONCURRENT:4}"
+    
+  # 연결 관리
+  connection_pooling:
+    enabled: true
+    max_connections: "${MAX_DB_CONNECTIONS:10}"
+    connection_timeout: 30000
+    
+  # 압축 설정
+  compression:
+    enabled: true
+    algorithm: "gzip"
+    level: 6  # 압축률과 성능의 균형
+
+# 보안 설정 (프로덕션 전용)
+security:
+  # 접근 제어
+  access_control:
+    enabled: true
+    allowed_ips: "${ALLOWED_IPS:127.0.0.1,::1}"
+    api_key_required: "${API_KEY_REQUIRED:true}"
+    api_key: "${LOG_API_KEY:}"
+    
+  # 데이터 보호
+  data_protection:
+    encrypt_at_rest: "${ENCRYPT_LOGS:true}"
+    encryption_key: "${LOG_ENCRYPTION_KEY:}"
+    hash_sensitive_data: true
+    
+  # 감사 로깅
+  audit_logging:
+    enabled: true
+    log_access: true
+    log_modifications: true
+    audit_log_path: "${AUDIT_LOG_PATH:/var/log/recursive/audit.log}"
+
+# 모니터링 (프로덕션 전용)
+monitoring:
+  # 헬스체크
+  health_check:
+    enabled: true
+    interval: 30000  # 30초
+    timeout: 5000
+    
+  # 메트릭 수집
+  metrics:
+    enabled: true
+    prometheus_endpoint: "${PROMETHEUS_ENDPOINT:/metrics}"
+    collect_system_metrics: true
+    collect_performance_metrics: true
+    
+  # 분산 추적
+  tracing:
+    enabled: "${TRACING_ENABLED:false}"
+    jaeger_endpoint: "${JAEGER_ENDPOINT:}"
+    sampling_rate: "${TRACING_SAMPLING:0.1}"
+
+# 백업 및 복구
+backup:
+  enabled: true
+  strategy: "incremental"
+  schedule: "${BACKUP_SCHEDULE:0 2 * * *}"  # 매일 새벽 2시
+  retention_days: "${BACKUP_RETENTION:30}"
+  remote_backup:
+    enabled: "${REMOTE_BACKUP_ENABLED:false}"
+    provider: "${BACKUP_PROVIDER:s3}"
+    bucket: "${BACKUP_BUCKET:}"
+    credentials:
+      access_key: "${AWS_ACCESS_KEY:}"
+      secret_key: "${AWS_SECRET_KEY:}"
+      region: "${AWS_REGION:us-east-1}"
+
+# 로그 로테이션
+rotation:
+  enabled: true
+  max_file_size: "${LOG_FILE_MAX_SIZE:100MB}"
+  max_files: "${LOG_MAX_FILES:10}"
+  compress_rotated: true
+  rotation_schedule: "${ROTATION_SCHEDULE:daily}" 

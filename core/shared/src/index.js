@@ -24,6 +24,14 @@ const templates = require('./templates');
 // 이벤트 버스 (모듈 간 통신용)
 const EventEmitter = require('events');
 
+// Log System Integration
+let logSystemModule = null;
+try {
+  logSystemModule = require('../../modules/log-system/src/index');
+} catch (error) {
+  console.warn('Log system module not available:', error.message);
+}
+
 class RecursiveEventBus extends EventEmitter {
   constructor() {
     super();
@@ -198,15 +206,8 @@ class ConfigManager {
   }
 
   loadDefaultConfigs() {
-    // 기본 설정들 로드
-    this.configs.set('websocket', websocketConfig);
-    this.configs.set('app', {
-      name: 'Recursive Platform',
-      version: '1.0.0',
-      environment: utils.getEnv('NODE_ENV', 'development'),
-      port: parseInt(utils.getEnv('PORT', '3000')),
-      debug: utils.getEnv('DEBUG', 'false') === 'true'
-    });
+    // WebSocket 설정 로드
+    this.set('websocket', websocketConfig);
   }
 
   get(key, defaultValue = null) {
@@ -218,8 +219,8 @@ class ConfigManager {
   }
 
   merge(key, value) {
-    const existing = this.configs.get(key) || {};
-    this.configs.set(key, utils.deepMerge({}, existing, value));
+    const existing = this.get(key, {});
+    this.set(key, utils.deepMerge(existing, value));
   }
 
   getAll() {
@@ -228,44 +229,185 @@ class ConfigManager {
 }
 
 // 글로벌 설정 관리자 인스턴스
-const globalConfig = new ConfigManager();
+const globalConfigManager = new ConfigManager();
 
-// Import clients
-const LLMClient = require('./clients/llm-client');
+// Log System Integration (Phase 5.2)
+const LogSystem = {
+  // Core functions from log system module
+  getLogSystem: logSystemModule ? logSystemModule.getLogSystem : () => null,
+  createLogSystem: logSystemModule ? logSystemModule.createLogSystem : () => null,
+  initializeLogSystem: logSystemModule ? logSystemModule.initializeLogSystem : () => Promise.resolve(null),
+  
+  /**
+   * 빠른 로그 전송 편의 함수
+   * @param {string} level - 로그 레벨 (INFO, WARN, ERROR, DEBUG)
+   * @param {string} message - 로그 메시지
+   * @param {Object} metadata - 추가 메타데이터
+   * @returns {Promise<Object>} 로그 전송 결과
+   */
+  async logInfo(message, metadata = {}) {
+    if (!logSystemModule) return null;
+    try {
+      const logSystem = logSystemModule.getLogSystem();
+      if (!logSystem) return null;
+      
+      return await logSystem.log({
+        source: 'recursive_shared',
+        level: 'INFO',
+        message,
+        metadata: {
+          component: 'shared',
+          ...metadata
+        },
+        tags: ['shared', 'info']
+      });
+    } catch (error) {
+      console.warn('Failed to send log:', error.message);
+      return null;
+    }
+  },
+
+  async logWarn(message, metadata = {}) {
+    if (!logSystemModule) return null;
+    try {
+      const logSystem = logSystemModule.getLogSystem();
+      if (!logSystem) return null;
+      
+      return await logSystem.log({
+        source: 'recursive_shared',
+        level: 'WARN',
+        message,
+        metadata: {
+          component: 'shared',
+          ...metadata
+        },
+        tags: ['shared', 'warning']
+      });
+    } catch (error) {
+      console.warn('Failed to send log:', error.message);
+      return null;
+    }
+  },
+
+  async logDebug(message, metadata = {}) {
+    if (!logSystemModule) return null;
+    try {
+      const logSystem = logSystemModule.getLogSystem();
+      if (!logSystem) return null;
+      
+      return await logSystem.log({
+        source: 'recursive_shared',
+        level: 'DEBUG',
+        message,
+        metadata: {
+          component: 'shared',
+          ...metadata
+        },
+        tags: ['shared', 'debug']
+      });
+    } catch (error) {
+      console.warn('Failed to send log:', error.message);
+      return null;
+    }
+  },
+
+  async logServerEvent(event, data = {}) {
+    if (!logSystemModule) return null;
+    try {
+      const logSystem = logSystemModule.getLogSystem();
+      if (!logSystem) return null;
+      
+      return await logSystem.log({
+        source: 'recursive_server_events',
+        level: 'INFO',
+        message: `Server event: ${event}`,
+        metadata: {
+          component: 'server',
+          event,
+          ...data
+        },
+        tags: ['server', 'event', event]
+      });
+    } catch (error) {
+      console.warn('Failed to send log:', error.message);
+      return null;
+    }
+  },
+
+  /**
+   * 에러 로깅 편의 함수
+   * @param {Error} error - 에러 객체
+   * @param {Object} context - 추가 컨텍스트 정보
+   * @returns {Promise<Object>} 로그 전송 결과
+   */
+  async logError(error, context = {}) {
+    if (!logSystemModule) return null;
+    try {
+      const logSystem = logSystemModule.getLogSystem();
+      if (!logSystem) return null;
+      
+      return await logSystem.log({
+        source: 'recursive_error',
+        level: 'ERROR',
+        message: error.message || 'Unknown error',
+        metadata: {
+          component: 'shared',
+          error_name: error.name,
+          error_stack: error.stack,
+          error_code: error.code,
+          ...context
+        },
+        tags: ['error', 'exception', 'shared']
+      });
+    } catch (logError) {
+      console.warn('Failed to send error log:', logError.message);
+      return null;
+    }
+  },
+
+  /**
+   * 로그 시스템 상태 확인
+   * @returns {Object|null} 로그 시스템 상태
+   */
+  getSystemStatus() {
+    if (!logSystemModule) return null;
+    try {
+      const logSystem = logSystemModule.getLogSystem();
+      if (!logSystem) return null;
+      
+      return logSystem.getSystemStatus();
+    } catch (error) {
+      console.warn('Failed to get log system status:', error.message);
+      return null;
+    }
+  }
+};
 
 // 메인 exports
 module.exports = {
-  // 클래스들
+  // Core utilities
   Logger,
-  RecursiveEventBus,
-  ConfigManager,
   
-  // 인터페이스들
+  // AI Analysis interfaces
   AIAnalysisInterface,
   AnalysisResult,
-  
-  // 상수들
   COMPLEXITY_LEVELS,
   ANALYSIS_TYPES,
   SUPPORTED_LANGUAGES,
   
-  // 유틸리티들
-  utils,
+  // Configuration
+  config: globalConfigManager,
+  websocketConfig,
   
   // Templates
   templates,
   
-  // Clients
-  clients: {
-    LLMClient
-  },
-  
-  // 글로벌 인스턴스들
+  // Event system
   eventBus: globalEventBus,
-  config: globalConfig,
   
-  // 팩토리 함수들
-  createEventBus: () => new RecursiveEventBus(),
-  createConfigManager: () => new ConfigManager(),
-  createLogger: (options) => new Logger(options)
+  // Common utilities
+  utils,
+  
+  // Log System (Phase 5.2 Integration)
+  LogSystem
 }; 

@@ -1,0 +1,83 @@
+{
+  "name": "@recursive/log-system",
+  "version": "1.0.0",
+  "description": "Integrated log collection system for Recursive platform",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest --testTimeout=30000",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:integration": "jest tests/integration.test.js --testTimeout=60000",
+    "test:phase5": "jest tests/phase5-integration.test.js --testTimeout=60000 --verbose",
+    "test:phase5:performance": "jest tests/phase5-integration.test.js --testTimeout=60000 --verbose --detectOpenHandles",
+    "test:phase5:memory": "node --expose-gc --max-old-space-size=512 ./node_modules/.bin/jest tests/phase5-integration.test.js --testTimeout=60000 --verbose",
+    "test:collectors": "jest tests/collectors.test.js",
+    "test:mcp": "jest tests/mcp-tools.test.js",
+    "test:bridge": "jest tests/bridge.test.js",
+    "test:config": "jest tests/config-manager.test.js",
+    "test:json-rpc": "jest tests/json-rpc-client.test.js",
+    "test:mcp-performance": "jest tests/mcp-performance.test.js",
+    "dev": "nodemon python/server.py",
+    "start": "node src/index.js",
+    "python": "python python/server.py",
+    "bridge": "node demo/bridge-demo.js",
+    "demo": "node demo/config-demo.js",
+    "json-rpc": "node demo/json-rpc-demo.js",
+    "logs:start": "npm run python",
+    "logs:dev": "npm run dev",
+    "logs:test": "npm test",
+    "logs:python": "npm run python",
+    "logs:bridge": "npm run bridge",
+    "logs:setup": "node scripts/setup-env.js",
+    "logs:setup:dev": "node scripts/setup-env.js --env=development",
+    "logs:setup:prod": "node scripts/setup-env.js --env=production",
+    "logs:setup:test": "node scripts/setup-env.js --env=test",
+    "logs:env": "node scripts/setup-env.js --check",
+    "logs:config": "node -e \"console.log(JSON.stringify(require('./src/utils/config-manager').loadConfig(), null, 2))\"",
+    "logs:status": "node -e \"const {getLogSystem} = require('./src/index'); getLogSystem().then(ls => ls.getStats('1h')).then(console.log).catch(console.error)\""
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "detectOpenHandles": true,
+    "forceExit": true,
+    "maxWorkers": 1,
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"]
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "js-yaml": "^4.1.0",
+    "ws": "^8.14.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.55.0",
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.0",
+    "supertest": "^6.3.0"
+  },
+  "keywords": [
+    "logging",
+    "json-rpc",
+    "recursive",
+    "monitoring",
+    "python",
+    "nodejs",
+    "bridge"
+  ],
+  "author": "Recursive Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0",
+    "python": ">=3.8.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/recursive/platform.git",
+    "directory": "modules/log-system"
+  },
+  "files": [
+    "src/",
+    "config/",
+    "python/",
+    "README.md"
+  ]
+}

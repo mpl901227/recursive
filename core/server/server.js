@@ -24,6 +24,10 @@ const { getDefaultInstance: getAIAnalysis } = require('@recursive/ai-analysis');
 // Import shared utilities
 const { eventBus, config: sharedConfig, utils } = require('@recursive/shared');
 
+// Import log system
+const { getLogSystem, initializeLogSystem } = require('../../modules/log-system/src/index');
+const RecursiveCollectors = require('../../modules/log-system/src/collectors/recursive-collectors');
+
 class RecursiveServer {
   constructor() {
     this.app = express();
@@ -33,6 +37,10 @@ class RecursiveServer {
     this.logger = null;
     this.aiAnalysis = null;
     this.isShuttingDown = false;
+    
+    // 로그 시스템 관련 속성 추가
+    this.logSystem = null;
+    this.logCollectors = null;
   }
 
   async initialize() {
@@ -42,6 +50,9 @@ class RecursiveServer {
       enableFile: true,
       logDir: './logs'
     });
+
+    // 로그 시스템 초기화 (AI 분석 모듈보다 먼저)
+    await this.setupLogSystem();
 
     // AI 분석 모듈 초기화
     await this.setupAIAnalysis();
@@ -57,6 +68,97 @@ class RecursiveServer {
     
     // Graceful shutdown 핸들러
     this.setupGracefulShutdown();
+  }
+
+  async setupLogSystem() {
+    console.log('🔍 Setting up integrated log system...');
+    
+    try {
+      // 로그 시스템 초기화
+      this.logSystem = await initializeLogSystem({
+        configPath: './modules/log-system/config/recursive.yaml',
+        environment: process.env.NODE_ENV || 'development',
+        watchForChanges: true
+      });
+      
+      console.log('✅ Log system bridge initialized');
+      
+      // Recursive 특화 수집기 시작
+      this.logCollectors = new RecursiveCollectors(this.logSystem, {
+        autoRegister: true,
+        enableAll: true
+      });
+      
+      await this.logCollectors.start();
+      console.log('✅ Log collectors started');
+      
+      // 이벤트 버스에 로그 시스템 등록
+      eventBus.registerModule('log-system', this.logSystem);
+      eventBus.registerModule('log-collectors', this.logCollectors);
+      
+      // 기존 로거를 로그 시스템으로 연결
+      this.connectLoggerToLogSystem();
+      
+      console.log('✅ Log system integration completed');
+      
+    } catch (error) {
+      console.error('❌ Failed to setup log system:', error);
+      // 로그 시스템 실패해도 메인 서버는 계속 실행
+      this.logSystem = null;
+      this.logCollectors = null;
+    }
+  }
+
+  connectLoggerToLogSystem() {
+    if (!this.logSystem || !this.logger) return;
+    
+    // 기존 로거의 이벤트를 로그 시스템으로 전달
+    const originalLog = this.logger.log.bind(this.logger);
+    
+    this.logger.log = (level, message, metadata = {}) => {
+      // 기존 로깅 수행
+      originalLog(level, message, metadata);
+      
+      // 로그 시스템으로도 전송
+      if (this.logSystem) {
+        this.logSystem.log({
+          source: 'recursive_server',
+          level: level.toUpperCase(),
+          message: typeof message === 'string' ? message : JSON.stringify(message),
+          metadata: {
+            component: 'server',
+            ...metadata
+          },
+          tags: ['server', 'main']
+        }).catch(err => {
+          // 로그 시스템 오류가 메인 서버에 영향을 주지 않도록
+          console.warn('Log system error:', err.message);
+        });
+      }
+    };
+    
+    // 편의 메서드들도 연결
+    ['info', 'warn', 'error', 'debug'].forEach(level => {
+      if (this.logger[level]) {
+        const originalMethod = this.logger[level].bind(this.logger);
+        this.logger[level] = (message, metadata) => {
+          originalMethod(message, metadata);
+          
+          if (this.logSystem) {
+            this.logSystem.log({
+              source: 'recursive_server',
+              level: level.toUpperCase(),
+              message: typeof message === 'string' ? message : JSON.stringify(message),
+              metadata: {
+                component: 'server',
+                ...metadata
+              },
+              tags: ['server', 'main', level]
+            }).catch(() => {}); // 에러 무시
+          }
+        };
+      }
+    });
   }
 
   async setupAIAnalysis() {
@@ -80,6 +182,14 @@ class RecursiveServer {
   }
 
   setupExpressMiddleware() {
+    // HTTP 로그 수집기 미들웨어 추가 (가장 먼저)
+    if (this.logCollectors && this.logCollectors.collectors.has('recursive_http')) {
+      const httpCollector = this.logCollectors.collectors.get('recursive_http');
+      const httpMiddleware = httpCollector.createMiddleware();
+      this.app.use(httpMiddleware);
+      console.log('✅ HTTP logging middleware registered');
+    }
+
     // 보안 헤더
     this.app.use(helmet({
       contentSecurityPolicy: {
@@ -127,12 +237,20 @@ class RecursiveServer {
     // 헬스 체크
     this.app.get('/health', (req, res) => {
       const metrics = this.wsServer ? this.wsServer.getMetrics() : null;
+      const logSystemStatus = this.logSystem ? this.logSystem.getSystemStatus() : null;
+      const collectorsStatus = this.logCollectors ? this.logCollectors.getStatus() : null;
+      
       res.json({
         status: 'healthy',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
         memory: process.memoryUsage(),
-        websocket: metrics
+        websocket: metrics,
+        logSystem: {
+          enabled: !!this.logSystem,
+          status: logSystemStatus,
+          collectors: collectorsStatus
+        }
       });
     });
 
@@ -157,6 +275,54 @@ class RecursiveServer {
     // 클라이언트 라이브러리 다운로드
     this.app.get('/api/client-library', (req, res) => {
       res.sendFile(path.join(__dirname, 'public/js/websocket-client.js'));
+    });
+
+    // 로그 시스템 API 라우트들
+    this.app.get('/api/logs/status', (req, res) => {
+      if (!this.logSystem) {
+        return res.status(503).json({ error: 'Log system not available' });
+      }
+      
+      const status = this.logSystem.getSystemStatus();
+      const collectorsStatus = this.logCollectors ? this.logCollectors.getStatus() : null;
+      
+      res.json({
+        logSystem: status,
+        collectors: collectorsStatus,
+        timestamp: new Date().toISOString()
+      });
+    });
+
+    this.app.get('/api/logs/stats', async (req, res) => {
+      if (!this.logSystem) {
+        return res.status(503).json({ error: 'Log system not available' });
+      }
+      
+      try {
+        const timerange = req.query.timerange || '1h';
+        const stats = await this.logSystem.getStats(timerange);
+        res.json(stats);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    this.app.post('/api/logs/search', async (req, res) => {
+      if (!this.logSystem) {
+        return res.status(503).json({ error: 'Log system not available' });
+      }
+      
+      try {
+        const { query, timerange = '1h', context = 3 } = req.body;
+        if (!query) {
+          return res.status(400).json({ error: 'Query parameter required' });
+        }
+        
+        const results = await this.logSystem.search(query, timerange, context);
+        res.json(results);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
     });
 
     // 메인 대시보드
@@ -454,6 +620,17 @@ class RecursiveServer {
         // WebSocket 서버 종료
         if (this.wsServer) {
           await this.wsServer.stop();
+        }
+
+        // 로그 시스템 정리
+        if (this.logCollectors) {
+          await this.logCollectors.gracefulShutdown();
+          this.logger.info('Log collectors stopped');
+        }
+        
+        if (this.logSystem) {
+          await this.logSystem.gracefulShutdown();
+          this.logger.info('Log system stopped');
         }
 
         // HTTP 서버 종료

@@ -1,0 +1,179 @@
+# Recursive 로그 시스템 - 개발 환경 설정
+# 개발 생산성과 디버깅에 최적화
+
+# 기본 환경 정보
+environment: "development"
+debug_mode: true
+
+# 서버 설정 (개발 환경 최적화)
+server:
+  host: "${LOG_HOST:localhost}"
+  port: "${LOG_PORT:8888}"
+  auto_start: true
+  auto_restart: true
+  max_restart_attempts: 3
+  restart_delay: 1000  # 빠른 재시작
+  startup_timeout: 15000  # 빠른 시작
+  shutdown_timeout: 5000
+  python_path: "${PYTHON_PATH:python}"
+  verbose: true
+  debug: true  # 상세 디버그 로그
+
+# 저장소 설정 (개발용)
+storage:
+  db_path: "${LOG_DB_PATH:./logs/dev_logs.db}"
+  max_size_mb: 100  # 작은 크기
+  max_days: 7  # 짧은 보관 기간
+  compression_enabled: false  # 디버깅 용이성
+  backup_enabled: false  # 개발에서는 불필요
+  vacuum_interval: "1d"  # 빈번한 정리
+
+# 수집기 설정 (개발 친화적)
+collectors:
+  recursive_mcp:
+    enabled: true
+    auto_trace: true
+    log_requests: true
+    log_responses: true
+    include_params: true  # 디버깅용 전체 파라미터
+    exclude_methods: []
+    
+  recursive_websocket:
+    enabled: true
+    log_connections: true
+    log_messages: true  # 개발에서는 메시지도 로깅
+    log_errors: true
+    include_user_agent: true
+    
+  recursive_ai:
+    enabled: true
+    log_python_calls: true
+    log_analysis_start: true
+    log_analysis_complete: true
+    include_input_size: true
+    include_result_size: true
+    log_intermediate_steps: true  # 개발용 중간 단계 로깅
+    
+  recursive_http:
+    enabled: true
+    log_requests: true
+    log_responses: true
+    include_headers: true  # 디버깅용 헤더 포함
+    capture_body: false  # 보안상 여전히 false
+    ignore_paths:
+      - "/health"
+      - "/favicon.ico"
+    ignore_extensions:
+      - ".ico"
+    slow_request_threshold: 500  # 더 민감한 감지
+    
+  recursive_filesystem:
+    enabled: true  # 개발에서 파일 변경 추적
+    watch_directories:
+      - "./src"
+      - "./modules"
+      - "./core"
+    ignore_patterns:
+      - "node_modules/**"
+      - ".git/**"
+      - "*.log"
+      - "dist/**"
+      - "build/**"
+
+# 로그 레벨 (개발용 - 상세)
+logging:
+  default_level: "DEBUG"
+  levels:
+    recursive_server: "DEBUG"
+    mcp_calls: "DEBUG"
+    websocket: "INFO"
+    ai_analysis: "DEBUG"
+    http_traffic: "INFO"
+    error: "ERROR"
+    debug: "DEBUG"
+
+# 필터링 (개발용 - 관대)
+filters:
+  exclude_patterns:
+    - "health check"
+    - "favicon.ico"
+  
+  sensitive_fields:
+    - "password"
+    - "token"
+    - "api_key"
+    - "secret"
+    - "authorization"
+  
+  rate_limiting:
+    enabled: false  # 개발에서는 제한 없음
+
+# 알림 (개발용 - 즉시 피드백)
+alerts:
+  enabled: true
+  
+  error_spike:
+    enabled: true
+    threshold: 5  # 더 민감
+    window_seconds: 60  # 짧은 윈도우
+    cooldown_seconds: 60
+    
+  slow_requests:
+    enabled: true
+    threshold_ms: 1000  # 더 민감
+    count_threshold: 3
+    window_seconds: 60
+    
+  system_resources:
+    enabled: true
+    memory_threshold_mb: 50
+    disk_threshold_mb: 100
+    
+  channels:
+    - type: "console"
+      enabled: true
+      level: "DEBUG"
+      colored: true
+    - type: "file"
+      enabled: true
+      path: "./logs/dev_alerts.log"
+      level: "INFO"
+
+# 성능 설정 (개발 최적화)
+performance:
+  batch_processing:
+    enabled: false  # 즉시 처리로 실시간 디버깅
+    
+  memory_management:
+    max_buffer_size: 100  # 작은 버퍼
+    gc_interval: 30000
+    
+  indexing:
+    enabled: true
+    fields:
+      - "timestamp"
+      - "source"
+      - "level"
+      - "trace_id"
+
+# 개발 전용 기능
+development:
+  hot_reload: true
+  detailed_errors: true
+  include_stack_traces: true
+  log_sql_queries: true  # SQL 쿼리 디버깅
+  mock_external_services: false
+  enable_profiling: true
+  enable_memory_tracking: true
+  
+  # 개발 도구
+  dev_tools:
+    enable_log_browser: true
+    enable_realtime_viewer: true
+    enable_query_playground: true
+    
+  # 테스트 설정
+  testing:
+    auto_cleanup: true
+    mock_data_enabled: true
+    test_db_path: "./logs/test_logs.db" 
