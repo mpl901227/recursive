@@ -1,0 +1,534 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Log Collector Configuration Schema",
+  "description": "통합 로그 수집기 설정 파일 검증 스키마",
+  "type": "object",
+  "required": ["project_name", "server", "storage", "collectors"],
+  "properties": {
+    "project_name": {
+      "type": "string",
+      "description": "프로젝트 이름",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[a-zA-Z0-9_-]+$"
+    },
+    "project_type": {
+      "type": "string",
+      "description": "프로젝트 타입",
+      "enum": ["webapp", "api", "microservice", "desktop"],
+      "default": "webapp"
+    },
+    "version": {
+      "type": "string",
+      "description": "설정 버전",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0"
+    },
+    "server": {
+      "type": "object",
+      "description": "서버 설정",
+      "required": ["host", "port"],
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "서버 호스트",
+          "default": "0.0.0.0"
+        },
+        "port": {
+          "type": "integer",
+          "description": "서버 포트",
+          "minimum": 1,
+          "maximum": 65535,
+          "default": 8888
+        },
+        "cors_enabled": {
+          "type": "boolean",
+          "description": "CORS 활성화 여부",
+          "default": true
+        },
+        "auth_token": {
+          "type": ["string", "null"],
+          "description": "인증 토큰",
+          "minLength": 8
+        },
+        "request_timeout": {
+          "type": "number",
+          "description": "요청 타임아웃 (초)",
+          "minimum": 1,
+          "maximum": 300,
+          "default": 30.0
+        },
+        "max_connections": {
+          "type": "integer",
+          "description": "최대 연결 수",
+          "minimum": 1,
+          "maximum": 10000,
+          "default": 1000
+        }
+      },
+      "additionalProperties": false
+    },
+    "storage": {
+      "type": "object",
+      "description": "저장소 설정",
+      "required": ["db_path"],
+      "properties": {
+        "db_path": {
+          "type": "string",
+          "description": "데이터베이스 파일 경로",
+          "minLength": 1
+        },
+        "max_size_mb": {
+          "type": "integer",
+          "description": "최대 DB 크기 (MB)",
+          "minimum": 10,
+          "maximum": 100000,
+          "default": 500
+        },
+        "max_days": {
+          "type": "integer",
+          "description": "로그 보관 기간 (일)",
+          "minimum": 1,
+          "maximum": 3650,
+          "default": 7
+        },
+        "enable_compression": {
+          "type": "boolean",
+          "description": "압축 활성화 여부",
+          "default": true
+        },
+        "batch_size": {
+          "type": "integer",
+          "description": "배치 크기",
+          "minimum": 10,
+          "maximum": 1000,
+          "default": 100
+        },
+        "batch_timeout": {
+          "type": "number",
+          "description": "배치 타임아웃 (초)",
+          "minimum": 0.1,
+          "maximum": 60,
+          "default": 1.0
+        },
+        "vacuum_interval": {
+          "type": "integer",
+          "description": "DB 최적화 주기 (초)",
+          "minimum": 60,
+          "maximum": 86400,
+          "default": 3600
+        },
+        "backup_enabled": {
+          "type": "boolean",
+          "description": "백업 활성화 여부",
+          "default": false
+        },
+        "backup_path": {
+          "type": "string",
+          "description": "백업 저장 경로"
+        }
+      },
+      "additionalProperties": false
+    },
+    "collectors": {
+      "type": "object",
+      "description": "수집기 설정",
+      "properties": {
+        "console": {
+          "type": "object",
+          "description": "콘솔 출력 수집기",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "활성화 여부",
+              "default": true
+            },
+            "commands": {
+              "type": "array",
+              "description": "모니터링할 명령어 목록",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "default": []
+            },
+            "auto_restart": {
+              "type": "boolean",
+              "description": "자동 재시작 여부",
+              "default": true
+            },
+            "capture_env": {
+              "type": "boolean",
+              "description": "환경변수 캡처 여부",
+              "default": false
+            },
+            "encoding": {
+              "type": "string",
+              "description": "문자 인코딩",
+              "enum": ["utf-8", "ascii", "latin-1"],
+              "default": "utf-8"
+            }
+          },
+          "additionalProperties": false
+        },
+        "http_traffic": {
+          "type": "object",
+          "description": "HTTP 트래픽 수집기",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "활성화 여부",
+              "default": true
+            },
+            "ports": {
+              "type": "array",
+              "description": "모니터링할 포트 목록",
+              "items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65535
+              },
+              "minItems": 1,
+              "default": [8000, 8080, 3000, 5000]
+            },
+            "proxy_port_offset": {
+              "type": "integer",
+              "description": "프록시 포트 오프셋",
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1000
+            },
+            "ignore_paths": {
+              "type": "array",
+              "description": "무시할 경로 목록",
+              "items": {
+                "type": "string"
+              },
+              "default": ["/health", "/metrics", "/favicon.ico"]
+            },
+            "capture_headers": {
+              "type": "boolean",
+              "description": "헤더 캡처 여부",
+              "default": true
+            },
+            "capture_body": {
+              "type": "boolean",
+              "description": "요청/응답 본문 캡처 여부",
+              "default": false
+            },
+            "max_body_size": {
+              "type": "integer",
+              "description": "최대 본문 크기 (bytes)",
+              "minimum": 0,
+              "maximum": 1048576,
+              "default": 1024
+            }
+          },
+          "additionalProperties": false
+        },
+        "file_watcher": {
+          "type": "object",
+          "description": "파일 변경 감시기",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "활성화 여부",
+              "default": true
+            },
+            "watch_paths": {
+              "type": "array",
+              "description": "감시할 경로 목록",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1,
+              "default": ["./src", "./config"]
+            },
+            "ignore_patterns": {
+              "type": "array",
+              "description": "무시할 파일 패턴",
+              "items": {
+                "type": "string"
+              },
+              "default": ["*.pyc", "__pycache__", ".git", "node_modules"]
+            },
+            "include_extensions": {
+              "type": "array",
+              "description": "포함할 파일 확장자",
+              "items": {
+                "type": "string",
+                "pattern": "^\\.[a-zA-Z0-9]+$"
+              },
+              "default": [".py", ".js", ".ts", ".yaml", ".yml", ".json"]
+            },
+            "recursive": {
+              "type": "boolean",
+              "description": "하위 디렉토리 포함 여부",
+              "default": true
+            },
+            "follow_symlinks": {
+              "type": "boolean",
+              "description": "심볼릭 링크 따라가기 여부",
+              "default": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "process_monitor": {
+          "type": "object",
+          "description": "프로세스 모니터",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "활성화 여부",
+              "default": false
+            },
+            "check_interval": {
+              "type": "number",
+              "description": "체크 주기 (초)",
+              "minimum": 1,
+              "maximum": 3600,
+              "default": 5.0
+            },
+            "monitor_processes": {
+              "type": "array",
+              "description": "모니터링할 프로세스 목록 (빈 배열이면 전체)",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            },
+            "cpu_threshold": {
+              "type": "number",
+              "description": "CPU 사용률 임계값 (%)",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 80.0
+            },
+            "memory_threshold_mb": {
+              "type": "number",
+              "description": "메모리 사용량 임계값 (MB)",
+              "minimum": 1,
+              "maximum": 100000,
+              "default": 1000.0
+            },
+            "track_children": {
+              "type": "boolean",
+              "description": "자식 프로세스 추적 여부",
+              "default": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "database": {
+          "type": "object",
+          "description": "데이터베이스 쿼리 수집기",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "활성화 여부",
+              "default": false
+            },
+            "databases": {
+              "type": "array",
+              "description": "데이터베이스 목록",
+              "items": {
+                "type": "object",
+                "required": ["type", "name"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["postgresql", "mysql", "sqlite", "oracle", "mssql"],
+                    "description": "데이터베이스 타입"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "데이터베이스 이름",
+                    "minLength": 1
+                  },
+                  "log_path": {
+                    "type": "string",
+                    "description": "로그 파일 경로"
+                  },
+                  "connection_string": {
+                    "type": "string",
+                    "description": "연결 문자열"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "default": []
+            },
+            "slow_query_threshold_ms": {
+              "type": "integer",
+              "description": "슬로우 쿼리 임계값 (밀리초)",
+              "minimum": 1,
+              "maximum": 60000,
+              "default": 1000
+            },
+            "capture_queries": {
+              "type": "boolean",
+              "description": "쿼리 캡처 여부",
+              "default": true
+            },
+            "capture_transactions": {
+              "type": "boolean",
+              "description": "트랜잭션 캡처 여부",
+              "default": false
+            },
+            "max_query_length": {
+              "type": "integer",
+              "description": "최대 쿼리 길이",
+              "minimum": 100,
+              "maximum": 10000,
+              "default": 1000
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "alerts": {
+      "type": "object",
+      "description": "알림 설정",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "알림 활성화 여부",
+          "default": true
+        },
+        "error_spike_threshold": {
+          "type": "integer",
+          "description": "에러 급증 임계값",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 10
+        },
+        "error_spike_window": {
+          "type": "integer",
+          "description": "에러 급증 감지 윈도우 (초)",
+          "minimum": 10,
+          "maximum": 3600,
+          "default": 60
+        },
+        "slow_response_multiplier": {
+          "type": "number",
+          "description": "느린 응답 감지 배수",
+          "minimum": 1.0,
+          "maximum": 10.0,
+          "default": 3.0
+        },
+        "channels": {
+          "type": "array",
+          "description": "알림 채널 목록",
+          "items": {
+            "type": "string",
+            "enum": ["console", "webhook", "slack", "email", "desktop"]
+          },
+          "default": ["console"]
+        },
+        "webhook_url": {
+          "type": ["string", "null"],
+          "description": "웹훅 URL",
+          "format": "uri"
+        },
+        "slack_token": {
+          "type": ["string", "null"],
+          "description": "슬랙 봇 토큰"
+        },
+        "email_config": {
+          "type": "object",
+          "description": "이메일 설정",
+          "properties": {
+            "smtp_server": {
+              "type": "string",
+              "description": "SMTP 서버"
+            },
+            "smtp_port": {
+              "type": "integer",
+              "description": "SMTP 포트",
+              "minimum": 1,
+              "maximum": 65535
+            },
+            "username": {
+              "type": "string",
+              "description": "사용자명"
+            },
+            "password": {
+              "type": "string",
+              "description": "비밀번호"
+            },
+            "from_email": {
+              "type": "string",
+              "description": "발신자 이메일",
+              "format": "email"
+            },
+            "to_emails": {
+              "type": "array",
+              "description": "수신자 이메일 목록",
+              "items": {
+                "type": "string",
+                "format": "email"
+              }
+            },
+            "use_tls": {
+              "type": "boolean",
+              "description": "TLS 사용 여부",
+              "default": true
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "created_at": {
+      "type": "string",
+      "description": "생성 시간",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "수정 시간",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "project_name": "my-webapp",
+      "project_type": "webapp",
+      "version": "1.0.0",
+      "server": {
+        "host": "0.0.0.0",
+        "port": 8888,
+        "cors_enabled": true
+      },
+      "storage": {
+        "db_path": "./logs/app_logs.db",
+        "max_size_mb": 1000,
+        "max_days": 14
+      },
+      "collectors": {
+        "console": {
+          "enabled": true,
+          "commands": ["python app.py", "npm start"]
+        },
+        "http_traffic": {
+          "enabled": true,
+          "ports": [8000, 3000]
+        },
+        "file_watcher": {
+          "enabled": true,
+          "watch_paths": ["./src", "./templates"]
+        }
+      },
+      "alerts": {
+        "enabled": true,
+        "channels": ["console", "slack"]
+      }
+    }
+  ]
+}

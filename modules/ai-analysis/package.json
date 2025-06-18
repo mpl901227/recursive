@@ -1,0 +1,48 @@
+{
+  "name": "@recursive/ai-analysis",
+  "version": "1.0.0",
+  "description": "AI-powered analysis and understanding tools for Recursive platform",
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./analyzer": "./src/tools/ai-understanding-analyzer.js",
+    "./utils": "./src/tools/utils/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "build": "echo 'No build step required for Node.js module'"
+  },
+  "dependencies": {
+    "axios": "^1.10.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
+    "eslint": "^8.56.0"
+  },
+  "keywords": [
+    "ai",
+    "analysis",
+    "understanding",
+    "recursive",
+    "intelligence",
+    "automation"
+  ],
+  "author": "Recursive Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/recursive-team/recursive.git",
+    "directory": "modules/ai-analysis"
+  }
+} 

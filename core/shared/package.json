@@ -1,0 +1,48 @@
+{
+  "name": "@recursive/shared",
+  "version": "1.0.0",
+  "description": "Shared utilities and configurations for Recursive platform",
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./utils": "./src/utils/index.js",
+    "./config": "./src/config/index.js",
+    "./types": "./types/index.js",
+    "./logger": "./src/utils/Logger.js",
+    "./interfaces": "./src/interfaces/index.js"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "build": "echo 'No build step required for shared library'"
+  },
+  "dependencies": {
+    "winston": "^3.11.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "eslint": "^8.56.0"
+  },
+  "keywords": [
+    "shared",
+    "utilities",
+    "config",
+    "recursive",
+    "common",
+    "library"
+  ],
+  "author": "Recursive Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/recursive-team/recursive.git",
+    "directory": "core/shared"
+  }
+} 

@@ -1,0 +1,51 @@
+{
+  "name": "@recursive/websocket-protocol",
+  "version": "1.0.0",
+  "description": "WebSocket server implementation with enterprise features for Recursive platform",
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./server": "./src/WebSocketServer.js",
+    "./handlers": "./src/handlers/index.js",
+    "./middleware": "./src/middleware/index.js",
+    "./utils": "./src/utils/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "build": "echo 'No build step required for Node.js module'"
+  },
+  "dependencies": {
+    "@recursive/shared": "^1.0.0",
+    "ws": "^8.16.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
+    "eslint": "^8.56.0"
+  },
+  "keywords": [
+    "websocket",
+    "server",
+    "real-time",
+    "recursive",
+    "enterprise",
+    "protocol"
+  ],
+  "author": "Recursive Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/recursive-team/recursive.git",
+    "directory": "modules/websocket-protocol"
+  }
+} 

@@ -1,0 +1,55 @@
+{
+  "name": "recursive-monorepo",
+  "version": "1.0.0",
+  "description": "Recursive Platform - Modular Web Application with AI-powered tools",
+  "private": true,
+  "workspaces": [
+    "core/*",
+    "modules/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=@recursive/server",
+    "dev:all": "npm run dev --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm test --workspaces --if-present",
+    "test:ci": "npm test --workspaces --if-present -- --ci --coverage",
+    "lint": "npm run lint --workspaces --if-present",
+    "lint:fix": "npm run lint:fix --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present",
+    "install:all": "npm install --workspaces",
+    "update:all": "npm update --workspaces",
+    "start": "npm start --workspace=@recursive/server",
+    "start:production": "NODE_ENV=production npm start --workspace=@recursive/server"
+  },
+  "devDependencies": {
+    "lerna": "^8.0.0",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "recursive",
+    "platform",
+    "ai",
+    "websocket",
+    "modular",
+    "monorepo",
+    "web-application"
+  ],
+  "author": "Recursive Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/recursive-team/recursive.git"
+  },
+  "bugs": {
+    "url": "https://github.com/recursive-team/recursive/issues"
+  },
+  "homepage": "https://github.com/recursive-team/recursive#readme"
+} 

@@ -1,0 +1,49 @@
+{
+  "name": "@recursive/mcp-protocol",
+  "version": "1.0.0",
+  "description": "Model Context Protocol (MCP) server implementation for Recursive platform",
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./server": "./src/server.js",
+    "./handlers": "./src/handlers/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "build": "echo 'No build step required for Node.js module'"
+  },
+  "dependencies": {
+    "@recursive/shared": "^1.0.0",
+    "@recursive/ai-analysis": "^1.0.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
+    "eslint": "^8.56.0"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "server",
+    "recursive",
+    "ai",
+    "llm"
+  ],
+  "author": "Recursive Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/recursive-team/recursive.git",
+    "directory": "modules/mcp-protocol"
+  }
+} 

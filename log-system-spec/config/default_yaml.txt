@@ -1,0 +1,198 @@
+# 통합 로그 수집기 기본 설정 파일
+# 프로젝트에 맞게 수정하여 사용하세요
+
+# 프로젝트 정보
+project_name: "my-project"
+project_type: "webapp"  # webapp, api, microservice, desktop
+version: "1.0.0"
+
+# 서버 설정
+server:
+  host: "0.0.0.0"
+  port: 8888
+  cors_enabled: true
+  auth_token: null  # 보안이 필요한 경우 토큰 설정
+  request_timeout: 30.0
+  max_connections: 1000
+
+# 저장소 설정
+storage:
+  db_path: "./logs/dev_logs.db"
+  max_size_mb: 500  # 최대 DB 크기 (MB)
+  max_days: 7       # 로그 보관 기간 (일)
+  enable_compression: true
+  batch_size: 100
+  batch_timeout: 1.0
+  vacuum_interval: 3600  # DB 최적화 주기 (초)
+  backup_enabled: false
+  backup_path: "./logs/backups"
+
+# 수집기 설정
+collectors:
+  # 콘솔 출력 수집기
+  console:
+    enabled: true
+    commands:
+      - "python app.py"
+      - "python manage.py runserver"
+      - "flask run"
+      - "npm start"
+      - "npm run dev"
+    auto_restart: true
+    capture_env: false
+    encoding: "utf-8"
+
+  # HTTP 트래픽 수집기
+  http_traffic:
+    enabled: true
+    ports:
+      - 8000
+      - 8080
+      - 3000
+      - 5000
+    proxy_port_offset: 1000  # 프록시 포트 = 원본 포트 + 1000
+    ignore_paths:
+      - "/health"
+      - "/metrics"
+      - "/favicon.ico"
+      - "/static"
+    capture_headers: true
+    capture_body: false  # 보안상 기본적으로 비활성화
+    max_body_size: 1024  # 최대 body 크기 (bytes)
+
+  # 파일 변경 감시기
+  file_watcher:
+    enabled: true
+    watch_paths:
+      - "./src"
+      - "./app"
+      - "./config"
+      - "./templates"
+    ignore_patterns:
+      - "*.pyc"
+      - "*.pyo"
+      - "*.pyd"
+      - "__pycache__"
+      - ".git"
+      - ".svn"
+      - "node_modules"
+      - "*.log"
+      - "*.tmp"
+      - ".DS_Store"
+      - "*.swp"
+      - "*.swo"
+    include_extensions:
+      - ".py"
+      - ".js"
+      - ".ts"
+      - ".jsx"
+      - ".tsx"
+      - ".java"
+      - ".go"
+      - ".rs"
+      - ".cpp"
+      - ".c"
+      - ".h"
+      - ".yaml"
+      - ".yml"
+      - ".json"
+      - ".xml"
+      - ".toml"
+      - ".ini"
+      - ".conf"
+      - ".html"
+      - ".css"
+      - ".scss"
+      - ".sql"
+    recursive: true
+    follow_symlinks: false
+
+  # 프로세스 모니터
+  process_monitor:
+    enabled: false  # 기본적으로 비활성화 (리소스 사용량 고려)
+    check_interval: 5.0
+    monitor_processes: []  # 빈 배열이면 모든 프로세스 모니터링
+    cpu_threshold: 80.0    # CPU 사용률 경고 임계값 (%)
+    memory_threshold_mb: 1000.0  # 메모리 사용량 경고 임계값 (MB)
+    track_children: true
+
+  # 데이터베이스 쿼리 수집기
+  database:
+    enabled: false  # 기본적으로 비활성화 (설정 필요)
+    databases: []
+    # 예시:
+    # - type: "postgresql"
+    #   name: "main_db"
+    #   log_path: "/var/log/postgresql/postgresql.log"
+    # - type: "mysql"
+    #   name: "user_db"
+    #   log_path: "/var/log/mysql/slow.log"
+    slow_query_threshold_ms: 1000
+    capture_queries: true
+    capture_transactions: false
+    max_query_length: 1000
+
+# 알림 설정
+alerts:
+  enabled: true
+  error_spike_threshold: 10     # N개 이상 에러 발생시 알림
+  error_spike_window: 60        # 시간 윈도우 (초)
+  slow_response_multiplier: 3.0 # 평균 응답시간의 N배 이상시 알림
+  channels:
+    - "console"  # 콘솔 출력
+    # - "webhook" # 웹훅
+    # - "slack"   # 슬랙
+    # - "email"   # 이메일
+  webhook_url: null
+  slack_token: null
+  email_config: {}
+
+# 메타데이터
+created_at: "2025-01-01T00:00:00"
+updated_at: "2025-01-01T00:00:00"
+
+# 환경별 설정 예시 (주석 처리됨)
+# 운영 환경에서는 이런 값들로 오버라이드
+# production:
+#   server:
+#     host: "0.0.0.0"
+#     port: 8888
+#     auth_token: "${LOG_COLLECTOR_AUTH_TOKEN}"
+#   storage:
+#     db_path: "/data/logs/prod_logs.db"
+#     max_size_mb: 2000
+#     max_days: 30
+#     backup_enabled: true
+#   alerts:
+#     enabled: true
+#     channels:
+#       - "slack"
+#       - "email"
+#     slack_token: "${SLACK_BOT_TOKEN}"
+
+# 개발 환경
+# development:
+#   collectors:
+#     console:
+#       commands:
+#         - "python manage.py runserver 0.0.0.0:8000"
+#         - "npm run dev"
+#     file_watcher:
+#       watch_paths:
+#         - "./src"
+#         - "./tests"
+#   alerts:
+#     enabled: false  # 개발 중에는 알림 비활성화
+
+# 테스트 환경  
+# testing:
+#   storage:
+#     db_path: ":memory:"  # 인메모리 DB 사용
+#     max_days: 1
+#   collectors:
+#     http_traffic:
+#       enabled: false
+#     file_watcher:
+#       enabled: false
+#   alerts:
+#     enabled: false
