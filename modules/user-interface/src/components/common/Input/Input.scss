@@ -1,0 +1,859 @@
+/**
+ * @fileoverview Input Component Styles
+ * @description 재사용 가능한 입력 컴포넌트 스타일
+ * @version 2.0.0
+ */
+
+// =============================================================================
+// 🎨 CSS Custom Properties (CSS Variables)
+// =============================================================================
+
+.input-container {
+  // 🎯 기본 색상
+  --input-bg: #ffffff;
+  --input-border: #d1d5db;
+  --input-border-focus: #3b82f6;
+  --input-text: #1f2937;
+  --input-placeholder: #9ca3af;
+  --input-label: #374151;
+  
+  // 🎯 상태별 색상
+  --input-border-hover: #9ca3af;
+  --input-border-disabled: #e5e7eb;
+  --input-bg-disabled: #f9fafb;
+  --input-text-disabled: #9ca3af;
+  --input-border-readonly: #e5e7eb;
+  --input-bg-readonly: #f9fafb;
+  
+  // 🎯 검증 상태 색상
+  --input-border-valid: #10b981;
+  --input-bg-valid: #ecfdf5;
+  --input-text-valid: #065f46;
+  --input-border-invalid: #ef4444;
+  --input-bg-invalid: #fef2f2;
+  --input-text-invalid: #991b1b;
+  --input-border-warning: #f59e0b;
+  --input-bg-warning: #fffbeb;
+  --input-text-warning: #92400e;
+  
+  // 🎯 크기별 설정
+  --input-height-xs: 28px;
+  --input-height-sm: 32px;
+  --input-height-md: 40px;
+  --input-height-lg: 48px;
+  --input-height-xl: 56px;
+  
+  --input-padding-x-xs: 8px;
+  --input-padding-x-sm: 10px;
+  --input-padding-x-md: 12px;
+  --input-padding-x-lg: 16px;
+  --input-padding-x-xl: 20px;
+  
+  --input-font-size-xs: 12px;
+  --input-font-size-sm: 13px;
+  --input-font-size-md: 14px;
+  --input-font-size-lg: 16px;
+  --input-font-size-xl: 18px;
+  
+  // 🎯 라벨 설정
+  --label-font-size-xs: 11px;
+  --label-font-size-sm: 12px;
+  --label-font-size-md: 13px;
+  --label-font-size-lg: 14px;
+  --label-font-size-xl: 16px;
+  
+  --label-margin-bottom-xs: 2px;
+  --label-margin-bottom-sm: 4px;
+  --label-margin-bottom-md: 6px;
+  --label-margin-bottom-lg: 8px;
+  --label-margin-bottom-xl: 10px;
+  
+  // 🎯 메시지 설정
+  --message-font-size-xs: 10px;
+  --message-font-size-sm: 11px;
+  --message-font-size-md: 12px;
+  --message-font-size-lg: 13px;
+  --message-font-size-xl: 14px;
+  
+  --message-margin-top-xs: 2px;
+  --message-margin-top-sm: 4px;
+  --message-margin-top-md: 6px;
+  --message-margin-top-lg: 8px;
+  --message-margin-top-xl: 10px;
+  
+  // 🎯 아이콘 설정
+  --icon-size-xs: 14px;
+  --icon-size-sm: 16px;
+  --icon-size-md: 18px;
+  --icon-size-lg: 20px;
+  --icon-size-xl: 24px;
+  
+  --icon-spacing-xs: 6px;
+  --icon-spacing-sm: 8px;
+  --icon-spacing-md: 10px;
+  --icon-spacing-lg: 12px;
+  --icon-spacing-xl: 16px;
+  
+  // 🎯 공통 설정
+  --input-border-width: 1px;
+  --input-border-radius: 6px;
+  --input-focus-ring-width: 3px;
+  --input-focus-ring-opacity: 0.1;
+  --input-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --input-font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --input-line-height: 1.5;
+}
+
+// =============================================================================
+// 🎯 Dark Theme Support
+// =============================================================================
+
+@media (prefers-color-scheme: dark) {
+  .input-container {
+    // 기본 색상
+    --input-bg: #1f2937;
+    --input-border: #4b5563;
+    --input-border-focus: #60a5fa;
+    --input-text: #f9fafb;
+    --input-placeholder: #6b7280;
+    --input-label: #d1d5db;
+    
+    // 상태별 색상
+    --input-border-hover: #6b7280;
+    --input-border-disabled: #374151;
+    --input-bg-disabled: #111827;
+    --input-text-disabled: #6b7280;
+    --input-border-readonly: #374151;
+    --input-bg-readonly: #111827;
+    
+    // 검증 상태 색상
+    --input-border-valid: #34d399;
+    --input-bg-valid: #064e3b;
+    --input-text-valid: #a7f3d0;
+    --input-border-invalid: #f87171;
+    --input-bg-invalid: #7f1d1d;
+    --input-text-invalid: #fca5a5;
+    --input-border-warning: #fbbf24;
+    --input-bg-warning: #78350f;
+    --input-text-warning: #fde68a;
+  }
+}
+
+// =============================================================================
+// 🎯 Base Container Styles
+// =============================================================================
+
+.input-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  font-family: var(--input-font-family);
+  
+  // 전체 너비 모드
+  &.full-width {
+    width: 100%;
+  }
+  
+  // 기본 최대 너비 설정
+  &:not(.full-width) {
+    max-width: 320px;
+  }
+}
+
+// =============================================================================
+// 🎯 Label Styles
+// =============================================================================
+
+.input-label {
+  display: block;
+  color: var(--input-label);
+  font-weight: 500;
+  line-height: var(--input-line-height);
+  transition: var(--input-transition);
+  
+  // 필수 표시
+  &.required {
+    .required-mark {
+      color: var(--input-border-invalid);
+      font-weight: 600;
+    }
+  }
+  
+  // 크기별 스타일
+  .input-xs & {
+    font-size: var(--label-font-size-xs);
+    margin-bottom: var(--label-margin-bottom-xs);
+  }
+  
+  .input-sm & {
+    font-size: var(--label-font-size-sm);
+    margin-bottom: var(--label-margin-bottom-sm);
+  }
+  
+  .input-md & {
+    font-size: var(--label-font-size-md);
+    margin-bottom: var(--label-margin-bottom-md);
+  }
+  
+  .input-lg & {
+    font-size: var(--label-font-size-lg);
+    margin-bottom: var(--label-margin-bottom-lg);
+  }
+  
+  .input-xl & {
+    font-size: var(--label-font-size-xl);
+    margin-bottom: var(--label-margin-bottom-xl);
+  }
+}
+
+// =============================================================================
+// 🎯 Input Field Wrapper
+// =============================================================================
+
+.input-field-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+// =============================================================================
+// 🎯 Input Field Styles
+// =============================================================================
+
+.input-field {
+  // 기본 스타일
+  position: relative;
+  width: 100%;
+  background-color: var(--input-bg);
+  border: var(--input-border-width) solid var(--input-border);
+  border-radius: var(--input-border-radius);
+  color: var(--input-text);
+  font-family: var(--input-font-family);
+  line-height: var(--input-line-height);
+  transition: var(--input-transition);
+  outline: none;
+  box-sizing: border-box;
+  
+  // 플레이스홀더 스타일
+  &::placeholder {
+    color: var(--input-placeholder);
+    opacity: 1;
+  }
+  
+  // 포커스 상태
+  &:focus {
+    border-color: var(--input-border-focus);
+    box-shadow: 0 0 0 var(--input-focus-ring-width) rgba(59, 130, 246, var(--input-focus-ring-opacity));
+  }
+  
+  // 호버 상태
+  &:hover:not(:disabled):not(:focus) {
+    border-color: var(--input-border-hover);
+  }
+  
+  // 비활성화 상태
+  &:disabled {
+    background-color: var(--input-bg-disabled);
+    border-color: var(--input-border-disabled);
+    color: var(--input-text-disabled);
+    cursor: not-allowed;
+    
+    &::placeholder {
+      color: var(--input-text-disabled);
+    }
+  }
+  
+  // 읽기 전용 상태
+  &:read-only {
+    background-color: var(--input-bg-readonly);
+    border-color: var(--input-border-readonly);
+    cursor: default;
+  }
+  
+  // 크기별 스타일
+  .input-xs & {
+    height: var(--input-height-xs);
+    padding: 0 var(--input-padding-x-xs);
+    font-size: var(--input-font-size-xs);
+  }
+  
+  .input-sm & {
+    height: var(--input-height-sm);
+    padding: 0 var(--input-padding-x-sm);
+    font-size: var(--input-font-size-sm);
+  }
+  
+  .input-md & {
+    height: var(--input-height-md);
+    padding: 0 var(--input-padding-x-md);
+    font-size: var(--input-font-size-md);
+  }
+  
+  .input-lg & {
+    height: var(--input-height-lg);
+    padding: 0 var(--input-padding-x-lg);
+    font-size: var(--input-font-size-lg);
+  }
+  
+  .input-xl & {
+    height: var(--input-height-xl);
+    padding: 0 var(--input-padding-x-xl);
+    font-size: var(--input-font-size-xl);
+  }
+  
+  // 아이콘이 있는 경우 패딩 조정
+  .has-icon.icon-left & {
+    .input-xs & { padding-left: calc(var(--input-padding-x-xs) + var(--icon-size-xs) + var(--icon-spacing-xs)); }
+    .input-sm & { padding-left: calc(var(--input-padding-x-sm) + var(--icon-size-sm) + var(--icon-spacing-sm)); }
+    .input-md & { padding-left: calc(var(--input-padding-x-md) + var(--icon-size-md) + var(--icon-spacing-md)); }
+    .input-lg & { padding-left: calc(var(--input-padding-x-lg) + var(--icon-size-lg) + var(--icon-spacing-lg)); }
+    .input-xl & { padding-left: calc(var(--input-padding-x-xl) + var(--icon-size-xl) + var(--icon-spacing-xl)); }
+  }
+  
+  .has-icon.icon-right & {
+    .input-xs & { padding-right: calc(var(--input-padding-x-xs) + var(--icon-size-xs) + var(--icon-spacing-xs)); }
+    .input-sm & { padding-right: calc(var(--input-padding-x-sm) + var(--icon-size-sm) + var(--icon-spacing-sm)); }
+    .input-md & { padding-right: calc(var(--input-padding-x-md) + var(--icon-size-md) + var(--icon-spacing-md)); }
+    .input-lg & { padding-right: calc(var(--input-padding-x-lg) + var(--icon-size-lg) + var(--icon-spacing-lg)); }
+    .input-xl & { padding-right: calc(var(--input-padding-x-xl) + var(--icon-size-xl) + var(--icon-spacing-xl)); }
+  }
+}
+
+// =============================================================================
+// 🎯 Validation States
+// =============================================================================
+
+// 검증 중 상태
+.input-container.validating {
+  .input-field {
+    border-color: var(--input-border);
+    
+    &:focus {
+      border-color: var(--input-border-focus);
+    }
+  }
+}
+
+// 유효한 상태
+.input-container.validation-valid {
+  .input-field {
+    border-color: var(--input-border-valid);
+    background-color: var(--input-bg-valid);
+    
+    &:focus {
+      border-color: var(--input-border-valid);
+      box-shadow: 0 0 0 var(--input-focus-ring-width) rgba(16, 185, 129, var(--input-focus-ring-opacity));
+    }
+  }
+  
+  .input-label {
+    color: var(--input-text-valid);
+  }
+}
+
+// 무효한 상태
+.input-container.validation-invalid {
+  .input-field {
+    border-color: var(--input-border-invalid);
+    background-color: var(--input-bg-invalid);
+    
+    &:focus {
+      border-color: var(--input-border-invalid);
+      box-shadow: 0 0 0 var(--input-focus-ring-width) rgba(239, 68, 68, var(--input-focus-ring-opacity));
+    }
+  }
+  
+  .input-label {
+    color: var(--input-text-invalid);
+  }
+}
+
+// 경고 상태
+.input-container.validation-warning {
+  .input-field {
+    border-color: var(--input-border-warning);
+    background-color: var(--input-bg-warning);
+    
+    &:focus {
+      border-color: var(--input-border-warning);
+      box-shadow: 0 0 0 var(--input-focus-ring-width) rgba(245, 158, 11, var(--input-focus-ring-opacity));
+    }
+  }
+  
+  .input-label {
+    color: var(--input-text-warning);
+  }
+}
+
+// 로딩 상태
+.input-container.validation-loading {
+  .input-field {
+    border-color: var(--input-border);
+    
+    &:focus {
+      border-color: var(--input-border-focus);
+    }
+  }
+}
+
+// =============================================================================
+// 🎯 Icon Styles
+// =============================================================================
+
+.input-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--input-placeholder);
+  transition: var(--input-transition);
+  pointer-events: none;
+  z-index: 1;
+  
+  // 클릭 가능한 아이콘
+  &.clickable {
+    pointer-events: auto;
+    cursor: pointer;
+    border-radius: 4px;
+    
+    &:hover {
+      color: var(--input-text);
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    &:focus {
+      outline: 2px solid var(--input-border-focus);
+      outline-offset: 2px;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+    }
+  }
+  
+  // 위치별 스타일
+  &.icon-left {
+    .input-xs & { left: var(--input-padding-x-xs); width: var(--icon-size-xs); height: var(--icon-size-xs); }
+    .input-sm & { left: var(--input-padding-x-sm); width: var(--icon-size-sm); height: var(--icon-size-sm); }
+    .input-md & { left: var(--input-padding-x-md); width: var(--icon-size-md); height: var(--icon-size-md); }
+    .input-lg & { left: var(--input-padding-x-lg); width: var(--icon-size-lg); height: var(--icon-size-lg); }
+    .input-xl & { left: var(--input-padding-x-xl); width: var(--icon-size-xl); height: var(--icon-size-xl); }
+  }
+  
+  &.icon-right {
+    .input-xs & { right: var(--input-padding-x-xs); width: var(--icon-size-xs); height: var(--icon-size-xs); }
+    .input-sm & { right: var(--input-padding-x-sm); width: var(--icon-size-sm); height: var(--icon-size-sm); }
+    .input-md & { right: var(--input-padding-x-md); width: var(--icon-size-md); height: var(--icon-size-md); }
+    .input-lg & { right: var(--input-padding-x-lg); width: var(--icon-size-lg); height: var(--icon-size-lg); }
+    .input-xl & { right: var(--input-padding-x-xl); width: var(--icon-size-xl); height: var(--icon-size-xl); }
+  }
+  
+  // 아이콘 내부 SVG/이미지 스타일
+  svg, img {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+    display: block;
+  }
+}
+
+// =============================================================================
+// 🎯 Message Styles
+// =============================================================================
+
+.input-help-text,
+.input-message {
+  display: block;
+  line-height: var(--input-line-height);
+  transition: var(--input-transition);
+  
+  // 크기별 스타일
+  .input-xs & {
+    font-size: var(--message-font-size-xs);
+    margin-top: var(--message-margin-top-xs);
+  }
+  
+  .input-sm & {
+    font-size: var(--message-font-size-sm);
+    margin-top: var(--message-margin-top-sm);
+  }
+  
+  .input-md & {
+    font-size: var(--message-font-size-md);
+    margin-top: var(--message-margin-top-md);
+  }
+  
+  .input-lg & {
+    font-size: var(--message-font-size-lg);
+    margin-top: var(--message-margin-top-lg);
+  }
+  
+  .input-xl & {
+    font-size: var(--message-font-size-xl);
+    margin-top: var(--message-margin-top-xl);
+  }
+}
+
+// 도움말 텍스트
+.input-help-text {
+  color: var(--input-placeholder);
+}
+
+// 검증 메시지
+.input-message {
+  font-weight: 500;
+  
+  // 상태별 색상
+  &.message-valid {
+    color: var(--input-text-valid);
+  }
+  
+  &.message-invalid {
+    color: var(--input-text-invalid);
+  }
+  
+  &.message-warning {
+    color: var(--input-text-warning);
+  }
+  
+  &.message-loading {
+    color: var(--input-placeholder);
+    
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 6px;
+      border: 2px solid var(--input-placeholder);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: input-loading-spin 1s linear infinite;
+      vertical-align: text-bottom;
+    }
+  }
+}
+
+// =============================================================================
+// 🎯 State Modifiers
+// =============================================================================
+
+.input-container {
+  // 포커스 상태
+  &.focused {
+    .input-label {
+      color: var(--input-border-focus);
+    }
+    
+    .input-icon {
+      color: var(--input-border-focus);
+    }
+  }
+  
+  // 비활성화 상태
+  &.disabled {
+    .input-label {
+      color: var(--input-text-disabled);
+    }
+    
+    .input-icon {
+      color: var(--input-text-disabled);
+    }
+    
+    .input-help-text,
+    .input-message {
+      color: var(--input-text-disabled);
+    }
+  }
+  
+  // 읽기 전용 상태
+  &.readonly {
+    .input-label {
+      color: var(--input-placeholder);
+    }
+    
+    .input-icon {
+      color: var(--input-placeholder);
+    }
+  }
+  
+  // 값이 있는 상태
+  &.has-value {
+    .input-field {
+      border-color: var(--input-border-focus);
+    }
+  }
+  
+  // 변경된 상태
+  &.dirty {
+    .input-field {
+      border-left: 3px solid var(--input-border-focus);
+    }
+  }
+  
+  // 터치된 상태
+  &.touched {
+    .input-field {
+      transition: var(--input-transition);
+    }
+  }
+}
+
+// =============================================================================
+// 🎯 Special Input Types
+// =============================================================================
+
+// 파일 입력
+.input-field[type="file"] {
+  padding: 8px;
+  line-height: 1.2;
+  
+  &::file-selector-button {
+    background-color: var(--input-border);
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin-right: 8px;
+    color: var(--input-text);
+    font-size: inherit;
+    cursor: pointer;
+    transition: var(--input-transition);
+    
+    &:hover {
+      background-color: var(--input-border-hover);
+    }
+  }
+}
+
+// 색상 입력
+.input-field[type="color"] {
+  padding: 2px;
+  cursor: pointer;
+  
+  &::-webkit-color-swatch-wrapper {
+    padding: 0;
+    border: none;
+    border-radius: calc(var(--input-border-radius) - 2px);
+    overflow: hidden;
+  }
+  
+  &::-webkit-color-swatch {
+    border: none;
+  }
+}
+
+// 범위 입력
+.input-field[type="range"] {
+  padding: 0;
+  background: transparent;
+  border: none;
+  height: auto;
+  
+  &:focus {
+    box-shadow: none;
+  }
+  
+  &::-webkit-slider-track {
+    width: 100%;
+    height: 6px;
+    background: var(--input-border);
+    border-radius: 3px;
+  }
+  
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--input-border-focus);
+    border-radius: 50%;
+    cursor: pointer;
+    margin-top: -7px;
+    transition: var(--input-transition);
+    
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+  
+  &::-moz-range-track {
+    width: 100%;
+    height: 6px;
+    background: var(--input-border);
+    border-radius: 3px;
+    border: none;
+  }
+  
+  &::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: var(--input-border-focus);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    transition: var(--input-transition);
+    
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+}
+
+// 체크박스와 라디오
+.input-field[type="checkbox"],
+.input-field[type="radio"] {
+  width: auto;
+  height: auto;
+  margin-right: 8px;
+  
+  .input-xs & { width: 14px; height: 14px; }
+  .input-sm & { width: 16px; height: 16px; }
+  .input-md & { width: 18px; height: 18px; }
+  .input-lg & { width: 20px; height: 20px; }
+  .input-xl & { width: 24px; height: 24px; }
+}
+
+// =============================================================================
+// 🎯 Animations
+// =============================================================================
+
+@keyframes input-loading-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// =============================================================================
+// 🎯 Accessibility Features
+// =============================================================================
+
+// 고대비 모드
+@media (prefers-contrast: high) {
+  .input-container {
+    --input-border-width: 2px;
+    --input-focus-ring-width: 4px;
+    
+    .input-field {
+      &:focus {
+        outline: 3px solid var(--input-border-focus);
+        outline-offset: 2px;
+      }
+    }
+  }
+}
+
+// 모션 감소 모드
+@media (prefers-reduced-motion: reduce) {
+  .input-container {
+    --input-transition: none;
+    
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+// 스크린 리더 전용 텍스트
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// =============================================================================
+// 🎯 Mobile Optimizations
+// =============================================================================
+
+@media (max-width: 768px) {
+  .input-container {
+    // 모바일에서 최소 터치 타겟 크기 보장
+    &.input-xs .input-field,
+    &.input-sm .input-field {
+      min-height: 44px;
+    }
+    
+    // 모바일에서 적절한 폰트 크기
+    &.input-xs .input-field { font-size: max(var(--input-font-size-xs), 16px); }
+    &.input-sm .input-field { font-size: max(var(--input-font-size-sm), 16px); }
+  }
+}
+
+// =============================================================================
+// 🎯 Print Styles
+// =============================================================================
+
+@media print {
+  .input-container {
+    .input-field {
+      border: 1px solid #000;
+      background: transparent;
+      color: #000;
+      box-shadow: none;
+    }
+    
+    .input-icon,
+    .input-message.message-loading {
+      display: none;
+    }
+    
+    .input-label,
+    .input-help-text,
+    .input-message {
+      color: #000;
+    }
+  }
+}
+
+// =============================================================================
+// 🎯 Component Registration (선택사항)
+// =============================================================================
+
+.recursive-component.input {
+  /* 컴포넌트 등록을 위한 기본 클래스 */
+  display: block;
+  position: relative;
+}
+
+// =============================================================================
+// 🎯 Responsive Design
+// =============================================================================
+
+@media (min-width: 640px) {
+  .input-container {
+    &:not(.full-width) {
+      max-width: 384px;
+    }
+  }
+}
+
+@media (min-width: 768px) {
+  .input-container {
+    &:not(.full-width) {
+      max-width: 448px;
+    }
+  }
+}
+
+@media (min-width: 1024px) {
+  .input-container {
+    &:not(.full-width) {
+      max-width: 512px;
+    }
+  }
+} 

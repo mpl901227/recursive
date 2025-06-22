@@ -1,0 +1,91 @@
+// Light theme (default)
+:root {
+  color-scheme: light;
+
+  // Semantic colors - Light theme
+  --color-background-primary: var(--color-white);
+  --color-background-secondary: var(--color-gray-100);
+  --color-background-tertiary: var(--color-gray-200);
+  
+  --color-text-primary: var(--color-gray-900);
+  --color-text-secondary: var(--color-gray-700);
+  --color-text-tertiary: var(--color-gray-500);
+  
+  --color-border: var(--color-gray-200);
+  --color-border-focus: var(--color-primary);
+  
+  --color-shadow: rgba(0, 0, 0, 0.1);
+}
+
+// Dark theme
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    // Semantic colors - Dark theme
+    --color-background-primary: var(--color-gray-900);
+    --color-background-secondary: var(--color-gray-800);
+    --color-background-tertiary: var(--color-gray-700);
+    
+    --color-text-primary: var(--color-gray-100);
+    --color-text-secondary: var(--color-gray-300);
+    --color-text-tertiary: var(--color-gray-500);
+    
+    --color-border: var(--color-gray-700);
+    --color-border-focus: var(--color-primary-light);
+    
+    --color-shadow: rgba(0, 0, 0, 0.3);
+
+    // Adjust component colors for dark theme
+    --color-primary: var(--color-primary-light);
+    --color-secondary: var(--color-secondary-light);
+    
+    // Status colors adjustments
+    --color-success: #30D158;  // Brighter green
+    --color-warning: #FFD60A;  // Brighter yellow
+    --color-error: #FF453A;    // Brighter red
+    --color-info: #64D2FF;     // Brighter blue
+  }
+}
+
+// Manual theme class (for theme toggle functionality)
+:root.theme-dark {
+  color-scheme: dark;
+
+  // Semantic colors - Dark theme
+  --color-background-primary: var(--color-gray-900) !important;
+  --color-background-secondary: var(--color-gray-800) !important;
+  --color-background-tertiary: var(--color-gray-700) !important;
+  
+  --color-text-primary: var(--color-gray-100) !important;
+  --color-text-secondary: var(--color-gray-300) !important;
+  --color-text-tertiary: var(--color-gray-500) !important;
+  
+  --color-border: var(--color-gray-700) !important;
+  --color-border-focus: var(--color-primary-light) !important;
+  
+  --color-shadow: rgba(0, 0, 0, 0.3) !important;
+
+  // Adjust component colors for dark theme
+  --color-primary: var(--color-primary-light) !important;
+  --color-secondary: var(--color-secondary-light) !important;
+  
+  // Status colors adjustments
+  --color-success: #30D158 !important;  // Brighter green
+  --color-warning: #FFD60A !important;  // Brighter yellow
+  --color-error: #FF453A !important;    // Brighter red
+  --color-info: #64D2FF !important;     // Brighter blue
+}
+
+// High contrast overrides
+@media (forced-colors: active) {
+  :root {
+    --color-primary: CanvasText;
+    --color-secondary: CanvasText;
+    --color-border: CanvasText;
+    --color-text-primary: CanvasText;
+    --color-text-secondary: CanvasText;
+    --color-background-primary: Canvas;
+    --color-background-secondary: Canvas;
+  }
+} 

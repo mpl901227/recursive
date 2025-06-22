@@ -1,0 +1,201 @@
+// Import variables, mixins, and themes
+@use 'variables';
+@use 'mixins';
+@use 'themes';
+
+// Reset and base styles
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--color-text-primary);
+  background-color: var(--color-background-primary);
+  min-height: 100%;
+  @include mixins.custom-scrollbar;
+}
+
+// Typography
+h1, h2, h3, h4, h5, h6 {
+  margin-bottom: var(--spacing-4);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+h1 { font-size: var(--font-size-4xl); }
+h2 { font-size: var(--font-size-3xl); }
+h3 { font-size: var(--font-size-2xl); }
+h4 { font-size: var(--font-size-xl); }
+h5 { font-size: var(--font-size-lg); }
+h6 { font-size: var(--font-size-base); }
+
+p {
+  margin-bottom: var(--spacing-4);
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  @include mixins.interactive;
+}
+
+// Lists
+ul, ol {
+  margin-bottom: var(--spacing-4);
+  padding-left: var(--spacing-6);
+}
+
+// Form elements
+input, textarea, select, button {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+// Images
+img {
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+// Tables
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--spacing-4);
+}
+
+th, td {
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--color-border);
+}
+
+th {
+  background-color: var(--color-background-secondary);
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+}
+
+// Code
+code, pre {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  background-color: var(--color-background-secondary);
+  border-radius: var(--radius-base);
+}
+
+code {
+  padding: var(--spacing-1) var(--spacing-2);
+}
+
+pre {
+  padding: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+  overflow-x: auto;
+  @include mixins.custom-scrollbar;
+}
+
+// Utility classes
+.container {
+  @include mixins.container;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// Reduced motion
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// Print styles
+@media print {
+  body {
+    background: var(--color-white);
+    color: var(--color-black);
+  }
+
+  @page {
+    margin: 2cm;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+
+  img {
+    max-height: 100vh;
+    page-break-inside: avoid;
+  }
+
+  pre, blockquote {
+    page-break-inside: avoid;
+  }
+}
+
+// App Container Layout (Legacy Compatible)
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: relative;
+}
+
+.app-main {
+  display: grid;
+  grid-template-columns: var(--sidebar-width, 280px) 1fr var(--ai-sidebar-width, 360px);
+  grid-template-areas: "sidebar main ai-sidebar";
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  transition: var(--transition-base);
+
+  // Grid layout states
+  &.left-collapsed {
+    grid-template-columns: 0 1fr var(--ai-sidebar-width, 360px);
+  }
+
+  &.right-collapsed {
+    grid-template-columns: var(--sidebar-width, 280px) 1fr 0;
+  }
+
+  &.both-collapsed {
+    grid-template-columns: 0 1fr 0;
+  }
+
+  // Mobile layout override
+  @media (max-width: 768px) {
+    display: flex;
+    flex-direction: row;
+    grid-template-columns: none;
+    grid-template-areas: none;
+  }
+} 

@@ -1,0 +1,97 @@
+/**
+ * Footer Component Styles
+ * 푸터 컴포넌트 스타일링
+ */
+
+.footer {
+  grid-area: footer;
+  background: var(--color-background-secondary);
+  border-top: 1px solid var(--color-border);
+  height: 40px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--spacing-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  z-index: var(--z-index-10);
+
+  .footer-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1200px;
+  }
+
+  .footer-left,
+  .footer-center,
+  .footer-right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+  }
+
+  .footer-center {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .footer-text {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+  }
+
+  .footer-link {
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    font-size: var(--font-size-xs);
+    transition: var(--transition-colors);
+
+    &:hover {
+      color: var(--color-primary);
+    }
+  }
+
+  .footer-divider {
+    width: 1px;
+    height: 16px;
+    background: var(--color-border);
+  }
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1);
+    font-size: var(--font-size-xs);
+
+    &::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--color-success);
+    }
+
+    &.status-warning::before {
+      background: var(--color-warning);
+    }
+
+    &.status-error::before {
+      background: var(--color-error);
+    }
+  }
+
+  // 반응형
+  @media (max-width: 768px) {
+    .footer-left,
+    .footer-right {
+      display: none;
+    }
+
+    .footer-center {
+      justify-content: center;
+    }
+  }
+} 

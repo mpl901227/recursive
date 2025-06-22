@@ -1,0 +1,139 @@
+// Colors
+:root {
+  // Primary colors
+  --color-primary: #007AFF;
+  --color-primary-light: #47A3FF;
+  --color-primary-dark: #0055B3;
+
+  // Secondary colors
+  --color-secondary: #5856D6;
+  --color-secondary-light: #7A79E3;
+  --color-secondary-dark: #3E3D96;
+
+  // Status colors
+  --color-success: #34C759;
+  --color-warning: #FF9500;
+  --color-error: #FF3B30;
+  --color-info: #5AC8FA;
+
+  // Neutral colors
+  --color-white: #FFFFFF;
+  --color-gray-100: #F2F2F7;
+  --color-gray-200: #E5E5EA;
+  --color-gray-300: #D1D1D6;
+  --color-gray-400: #C7C7CC;
+  --color-gray-500: #AEAEB2;
+  --color-gray-600: #8E8E93;
+  --color-gray-700: #636366;
+  --color-gray-800: #48484A;
+  --color-gray-900: #3A3A3C;
+  --color-black: #000000;
+
+  // Background colors
+  --color-background-primary: var(--color-white);
+  --color-background-secondary: var(--color-gray-100);
+  --color-background-tertiary: var(--color-gray-200);
+
+  // Text colors
+  --color-text-primary: var(--color-gray-900);
+  --color-text-secondary: var(--color-gray-700);
+  --color-text-tertiary: var(--color-gray-500);
+  --color-text-inverse: var(--color-white);
+
+  // Border colors
+  --color-border: var(--color-gray-200);
+  --color-border-focus: var(--color-primary);
+
+  // Shadow colors
+  --color-shadow: rgba(0, 0, 0, 0.1);
+
+  // Typography
+  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-family-mono: "SF Mono", SFMono-Regular, ui-monospace, Monaco, monospace;
+
+  // Font sizes
+  --font-size-xs: 0.75rem;    // 12px
+  --font-size-sm: 0.875rem;   // 14px
+  --font-size-base: 1rem;     // 16px
+  --font-size-lg: 1.125rem;   // 18px
+  --font-size-xl: 1.25rem;    // 20px
+  --font-size-2xl: 1.5rem;    // 24px
+  --font-size-3xl: 1.875rem;  // 30px
+  --font-size-4xl: 2.25rem;   // 36px
+
+  // Line heights
+  --line-height-tight: 1.25;
+  --line-height-base: 1.5;
+  --line-height-loose: 1.75;
+
+  // Font weights
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  // Spacing
+  --spacing-0: 0;
+  --spacing-1: 0.25rem;   // 4px
+  --spacing-2: 0.5rem;    // 8px
+  --spacing-3: 0.75rem;   // 12px
+  --spacing-4: 1rem;      // 16px
+  --spacing-5: 1.25rem;   // 20px
+  --spacing-6: 1.5rem;    // 24px
+  --spacing-8: 2rem;      // 32px
+  --spacing-10: 2.5rem;   // 40px
+  --spacing-12: 3rem;     // 48px
+  --spacing-16: 4rem;     // 64px
+
+  // Border radius
+  --radius-none: 0;
+  --radius-sm: 0.125rem;  // 2px
+  --radius-base: 0.25rem; // 4px
+  --radius-md: 0.375rem;  // 6px
+  --radius-lg: 0.5rem;    // 8px
+  --radius-xl: 0.75rem;   // 12px
+  --radius-2xl: 1rem;     // 16px
+  --radius-full: 9999px;
+
+  // Shadows
+  --shadow-sm: 0 1px 2px 0 var(--color-shadow);
+  --shadow-base: 0 1px 3px 0 var(--color-shadow), 0 1px 2px -1px var(--color-shadow);
+  --shadow-md: 0 4px 6px -1px var(--color-shadow), 0 2px 4px -2px var(--color-shadow);
+  --shadow-lg: 0 10px 15px -3px var(--color-shadow), 0 4px 6px -4px var(--color-shadow);
+  --shadow-xl: 0 20px 25px -5px var(--color-shadow), 0 8px 10px -6px var(--color-shadow);
+
+  // Z-index
+  --z-index-negative: -1;
+  --z-index-0: 0;
+  --z-index-10: 10;
+  --z-index-20: 20;
+  --z-index-30: 30;
+  --z-index-40: 40;
+  --z-index-50: 50;
+  --z-index-modal: 100;
+  --z-index-toast: 200;
+  --z-index-tooltip: 300;
+
+  // Transitions
+  --transition-base: all 0.2s ease-in-out;
+  --transition-fast: all 0.1s ease-in-out;
+  --transition-slow: all 0.3s ease-in-out;
+
+  // Layout (Legacy Compatible)
+  --header-height: 64px;
+  --sidebar-width: 280px;
+  --sidebar-min-width: 240px;
+  --sidebar-max-width: 400px;
+  --ai-sidebar-width: 360px;
+  --ai-sidebar-min-width: 300px;
+  --ai-sidebar-max-width: 500px;
+
+  // Additional spacing for legacy compatibility
+  --space-xs: 0.25rem;    // 4px
+  --space-sm: 0.5rem;     // 8px
+  --space-md: 1rem;       // 16px
+  --space-lg: 1.5rem;     // 24px
+  --space-xl: 2rem;       // 32px
+  --space-2xl: 3rem;      // 48px
+} 

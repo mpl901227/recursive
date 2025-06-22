@@ -1,0 +1,775 @@
+/**
+ * @fileoverview Toast Component Styles
+ * @description 토스트 알림 컴포넌트의 전체 스타일링
+ * @version 2.0.0
+ */
+
+// =============================================================================
+// 🎨 Variables & Mixins
+// =============================================================================
+
+:root {
+  // 기본 색상
+  --toast-bg-info: #3498db;
+  --toast-bg-success: #2ecc71;
+  --toast-bg-warning: #f39c12;
+  --toast-bg-error: #e74c3c;
+  --toast-bg-loading: #9b59b6;
+  
+  // 텍스트 색상
+  --toast-text-light: #ffffff;
+  --toast-text-dark: #2c3e50;
+  
+  // 애니메이션
+  --toast-animation-duration: 0.3s;
+  --toast-animation-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  // 크기
+  --toast-min-width: 280px;
+  --toast-max-width: 480px;
+  --toast-padding: 16px;
+  --toast-border-radius: 8px;
+  
+  // 그림자
+  --toast-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --toast-shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.2);
+  
+  // Z-index
+  --toast-z-index: 9999;
+  
+  // 간격
+  --toast-spacing: 12px;
+  --toast-container-padding: 16px;
+}
+
+// 다크 테마
+[data-theme="dark"] {
+  --toast-bg-info: #2980b9;
+  --toast-bg-success: #27ae60;
+  --toast-bg-warning: #e67e22;
+  --toast-bg-error: #c0392b;
+  --toast-bg-loading: #8e44ad;
+  
+  --toast-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --toast-shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+// =============================================================================
+// 🎯 Mixins
+// =============================================================================
+
+@mixin toast-animation($name) {
+  &.toast-#{$name} {
+    &.toast-show {
+      animation: toast-#{$name}-in var(--toast-animation-duration) var(--toast-animation-easing) forwards;
+    }
+    
+    &.toast-hide {
+      animation: toast-#{$name}-out var(--toast-animation-duration) var(--toast-animation-easing) forwards;
+    }
+  }
+}
+
+@mixin toast-size($name, $padding, $font-size, $icon-size) {
+  &.toast-#{$name} {
+    padding: #{$padding};
+    font-size: #{$font-size};
+    
+    .toast-icon {
+      font-size: #{$icon-size};
+      width: #{$icon-size};
+      height: #{$icon-size};
+    }
+    
+    .toast-title {
+      font-size: #{$font-size + 2px};
+    }
+    
+    .toast-close {
+      width: #{$icon-size};
+      height: #{$icon-size};
+      font-size: #{$icon-size - 4px};
+    }
+  }
+}
+
+@mixin toast-type($name, $bg-color) {
+  &.toast-#{$name} {
+    background-color: var(--toast-bg-#{$name});
+    
+    .toast-progress-bar {
+      background-color: rgba(255, 255, 255, 0.3);
+      
+      &::after {
+        background-color: rgba(255, 255, 255, 0.8);
+      }
+    }
+    
+    .toast-close {
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+    }
+    
+    .toast-action-btn {
+      &.toast-action-primary {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+        
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.3);
+        }
+      }
+      
+      &.toast-action-secondary {
+        background-color: transparent;
+        border-color: rgba(255, 255, 255, 0.3);
+        
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.1);
+        }
+      }
+      
+      &.toast-action-danger {
+        background-color: rgba(255, 255, 255, 0.9);
+        color: #e74c3c;
+        border-color: rgba(255, 255, 255, 0.9);
+        
+        &:hover {
+          background-color: rgba(255, 255, 255, 1);
+        }
+      }
+    }
+  }
+}
+
+// =============================================================================
+// 🎯 Container Styles
+// =============================================================================
+
+.toast-container {
+  position: fixed;
+  z-index: var(--toast-z-index);
+  display: flex;
+  flex-direction: column;
+  gap: var(--toast-spacing);
+  padding: var(--toast-container-padding);
+  pointer-events: none;
+  
+  // 위치별 스타일
+  &.toast-container-top-left {
+    top: 0;
+    left: 0;
+    align-items: flex-start;
+  }
+  
+  &.toast-container-top-center {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    align-items: center;
+  }
+  
+  &.toast-container-top-right {
+    top: 0;
+    right: 0;
+    align-items: flex-end;
+  }
+  
+  &.toast-container-bottom-left {
+    bottom: 0;
+    left: 0;
+    align-items: flex-start;
+    flex-direction: column-reverse;
+  }
+  
+  &.toast-container-bottom-center {
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    align-items: center;
+    flex-direction: column-reverse;
+  }
+  
+  &.toast-container-bottom-right {
+    bottom: 0;
+    right: 0;
+    align-items: flex-end;
+    flex-direction: column-reverse;
+  }
+}
+
+// =============================================================================
+// 🎯 Toast Base Styles
+// =============================================================================
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: var(--toast-min-width);
+  max-width: var(--toast-max-width);
+  padding: var(--toast-padding);
+  border-radius: var(--toast-border-radius);
+  box-shadow: var(--toast-shadow);
+  color: var(--toast-text-light);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
+  pointer-events: auto;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--toast-animation-duration) var(--toast-animation-easing);
+  
+  // 호버 효과
+  &:hover {
+    box-shadow: var(--toast-shadow-hover);
+    transform: translateY(-2px);
+  }
+  
+  // 일시정지 상태
+  &.toast-paused {
+    .toast-progress-bar::after {
+      animation-play-state: paused;
+    }
+  }
+  
+  // 타입별 스타일
+  @include toast-type('info', var(--toast-bg-info));
+  @include toast-type('success', var(--toast-bg-success));
+  @include toast-type('warning', var(--toast-bg-warning));
+  @include toast-type('error', var(--toast-bg-error));
+  @include toast-type('loading', var(--toast-bg-loading));
+  
+  // 크기별 스타일
+  @include toast-size('small', 12px, 12px, 16px);
+  @include toast-size('medium', 16px, 14px, 20px);
+  @include toast-size('large', 20px, 16px, 24px);
+  
+  // 애니메이션
+  @include toast-animation('fade');
+  @include toast-animation('slide');
+  @include toast-animation('bounce');
+  @include toast-animation('flip');
+}
+
+// =============================================================================
+// 🎯 Toast Content
+// =============================================================================
+
+.toast-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+}
+
+.toast-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-title {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 4px;
+  color: inherit;
+}
+
+.toast-message {
+  font-size: inherit;
+  line-height: 1.4;
+  color: inherit;
+  margin: 0;
+  
+  // HTML 내용 지원
+  * {
+    color: inherit;
+  }
+  
+  a {
+    color: inherit;
+    text-decoration: underline;
+    
+    &:hover {
+      text-decoration: none;
+    }
+  }
+  
+  code {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: 'SF Mono', Monaco, Inconsolata, 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-size: 0.9em;
+  }
+}
+
+// =============================================================================
+// 🎯 Toast Actions
+// =============================================================================
+
+.toast-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.toast-action-btn {
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  &:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
+  }
+}
+
+// =============================================================================
+// 🎯 Close Button
+// =============================================================================
+
+.toast-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  color: inherit;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  &:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 1px;
+  }
+  
+  span {
+    display: block;
+    line-height: 1;
+  }
+}
+
+// =============================================================================
+// 🎯 Progress Bar
+// =============================================================================
+
+.toast-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    transition: width 0.1s linear;
+  }
+}
+
+// =============================================================================
+// 🎯 Animations
+// =============================================================================
+
+// Fade 애니메이션
+@keyframes toast-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes toast-fade-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+// Slide 애니메이션
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes toast-slide-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+// 왼쪽 컨테이너용 슬라이드
+.toast-container-top-left,
+.toast-container-bottom-left {
+  .toast-slide {
+    &.toast-show {
+      animation: toast-slide-left-in var(--toast-animation-duration) var(--toast-animation-easing) forwards;
+    }
+    
+    &.toast-hide {
+      animation: toast-slide-left-out var(--toast-animation-duration) var(--toast-animation-easing) forwards;
+    }
+  }
+}
+
+@keyframes toast-slide-left-in {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes toast-slide-left-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+}
+
+// 중앙 컨테이너용 슬라이드
+.toast-container-top-center,
+.toast-container-bottom-center {
+  .toast-slide {
+    &.toast-show {
+      animation: toast-slide-center-in var(--toast-animation-duration) var(--toast-animation-easing) forwards;
+    }
+    
+    &.toast-hide {
+      animation: toast-slide-center-out var(--toast-animation-duration) var(--toast-animation-easing) forwards;
+    }
+  }
+}
+
+@keyframes toast-slide-center-in {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-slide-center-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+}
+
+// Bounce 애니메이션
+@keyframes toast-bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes toast-bounce-out {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+
+// Flip 애니메이션
+@keyframes toast-flip-in {
+  0% {
+    opacity: 0;
+    transform: perspective(400px) rotateX(90deg);
+  }
+  40% {
+    transform: perspective(400px) rotateX(-20deg);
+  }
+  60% {
+    transform: perspective(400px) rotateX(10deg);
+  }
+  80% {
+    transform: perspective(400px) rotateX(-5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(400px) rotateX(0deg);
+  }
+}
+
+@keyframes toast-flip-out {
+  0% {
+    opacity: 1;
+    transform: perspective(400px) rotateX(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: perspective(400px) rotateX(90deg);
+  }
+}
+
+// =============================================================================
+// 🎯 Responsive Design
+// =============================================================================
+
+@media (max-width: 640px) {
+  .toast-container {
+    --toast-container-padding: 12px;
+    
+    &.toast-container-top-left,
+    &.toast-container-top-right {
+      left: 0;
+      right: 0;
+      align-items: stretch;
+    }
+    
+    &.toast-container-bottom-left,
+    &.toast-container-bottom-right {
+      left: 0;
+      right: 0;
+      align-items: stretch;
+    }
+  }
+  
+  .toast {
+    max-width: none;
+    margin: 0;
+    
+    .toast-actions {
+      flex-direction: column;
+      
+      .toast-action-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .toast {
+    --toast-padding: 12px;
+    font-size: 13px;
+    
+    .toast-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+    
+    .toast-title {
+      font-size: 14px;
+    }
+  }
+}
+
+// =============================================================================
+// 🎯 Accessibility
+// =============================================================================
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    --toast-animation-duration: 0.1s;
+  }
+  
+  .toast-progress-bar::after {
+    transition: none;
+  }
+  
+  .toast:hover {
+    transform: none;
+  }
+  
+  .toast-action-btn:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .toast {
+    border: 2px solid var(--toast-text-light);
+  }
+  
+  .toast-close:focus {
+    outline: 3px solid var(--toast-text-light);
+  }
+  
+  .toast-action-btn:focus {
+    outline: 3px solid var(--toast-text-light);
+  }
+}
+
+// =============================================================================
+// 🎯 Print Styles
+// =============================================================================
+
+@media print {
+  .toast-container {
+    display: none !important;
+  }
+}
+
+// =============================================================================
+// 🎯 Loading Animation
+// =============================================================================
+
+.toast-loading {
+  .toast-icon {
+    animation: toast-loading-spin 1s linear infinite;
+  }
+}
+
+@keyframes toast-loading-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// =============================================================================
+// 🎯 Component Registry Integration
+// =============================================================================
+
+.toast-component {
+  // 컴포넌트 레지스트리와의 통합을 위한 기본 클래스
+  &[data-component="toast"] {
+    position: relative; // 추가 스타일이 필요한 경우 여기에 작성
+  }
+}
+
+// =============================================================================
+// 🎯 Utility Classes
+// =============================================================================
+
+.toast-no-animation {
+  --toast-animation-duration: 0s !important;
+  
+  &.toast-show,
+  &.toast-hide {
+    animation: none !important;
+  }
+}
+
+.toast-high-contrast {
+  filter: contrast(1.2) brightness(1.1);
+}
+
+.toast-large-text {
+  font-size: 16px !important;
+  
+  .toast-title {
+    font-size: 18px !important;
+  }
+}
+
+// =============================================================================
+// 🎯 Debug Styles (Development Only)
+// =============================================================================
+
+[data-env="development"] {
+  .toast {
+    &::before {
+      content: attr(data-toast-id);
+      position: absolute;
+      top: -20px;
+      left: 0;
+      font-size: 10px;
+      color: #666;
+      background: #f0f0f0;
+      padding: 2px 4px;
+      border-radius: 2px;
+      opacity: 0.7;
+    }
+  }
+}

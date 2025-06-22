@@ -1,0 +1,619 @@
+@use "@/styles/variables";
+@use "@/styles/mixins";
+/**
+ * @fileoverview MainContent Component Styles
+ * @description 메인 콘텐츠 영역의 완전한 스타일 정의
+ * @version 2.0.0
+ */
+
+// =============================================================================
+// CSS 변수 정의 (테마 시스템)
+// =============================================================================
+
+:root {
+  // MainContent 전용 색상
+  --main-content-bg: var(--color-background-primary);
+  --main-content-text: var(--color-text-primary);
+  --main-content-border: var(--color-border);
+  --main-content-shadow: var(--color-shadow);
+  
+  // 브레드크럼 색상
+  --breadcrumb-bg: var(--color-background-secondary);
+  --breadcrumb-text: var(--color-text-secondary);
+  --breadcrumb-link: var(--color-primary);
+  --breadcrumb-active: var(--color-text-primary);
+  --breadcrumb-separator: var(--color-text-tertiary);
+  
+  // 로딩 색상
+  --loading-bg: var(--color-overlay, rgba(255, 255, 255, 0.9));
+  --loading-spinner: var(--color-primary, #3b82f6);
+  --loading-text: var(--color-text-secondary, #64748b);
+  
+  // 에러 색상
+  --error-bg: var(--color-error-surface, #fef2f2);
+  --error-border: var(--color-error, #ef4444);
+  --error-text: var(--color-error-text, #dc2626);
+  --error-icon: var(--color-error, #ef4444);
+  
+  // 사이즈 및 간격
+  --main-content-padding: var(--spacing-6, 1.5rem);
+  --main-content-gap: var(--spacing-4, 1rem);
+  --breadcrumb-height: var(--spacing-12, 3rem);
+  --content-border-radius: var(--radius-lg, 0.5rem);
+  
+  // 애니메이션
+  --transition-main: var(--transition-base, all 0.2s ease-in-out);
+  --transition-content: var(--transition-slow, all 0.3s ease-in-out);
+  --animation-duration: var(--duration-normal, 0.3s);
+  
+  // Z-index
+  --z-loading: var(--z-overlay, 100);
+  --z-error: var(--z-modal, 200);
+}
+
+// 다크 테마 변수 - 올바른 선택자 사용
+:root.theme-dark {
+  --main-content-bg: var(--color-background-primary) !important;
+  --main-content-text: var(--color-text-primary) !important;
+  --main-content-border: var(--color-border) !important;
+  --main-content-shadow: var(--color-shadow) !important;
+  
+  --breadcrumb-bg: var(--color-background-secondary) !important;
+  --breadcrumb-text: var(--color-text-secondary) !important;
+  --breadcrumb-link: var(--color-primary) !important;
+  --breadcrumb-active: var(--color-text-primary) !important;
+  --breadcrumb-separator: var(--color-text-tertiary) !important;
+  
+  --loading-bg: var(--color-background-primary) !important;
+  --error-bg: var(--color-background-secondary) !important;
+  --error-text: var(--color-error) !important;
+}
+
+// =============================================================================
+// 메인 컨테이너
+// =============================================================================
+
+.main-content {
+  grid-area: main;
+  padding: var(--space-xl, 2rem);
+  overflow-y: auto;
+  background: var(--color-background-primary);
+  backdrop-filter: blur(5px);
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+  min-height: 100%;
+  position: relative;
+
+  // 접근성: 포커스 관리
+  &:focus-within {
+    outline: none;
+  }
+
+  // 반응형: 태블릿 이하
+  @media (max-width: 768px) {
+    padding: var(--space-lg, 1.5rem);
+  }
+
+  // 반응형: 모바일
+  @media (max-width: 480px) {
+    padding: var(--space-md, 1rem);
+  }
+}
+
+.content-section {
+  background: var(--color-background-secondary);
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-lg, 20px);
+  margin-bottom: var(--space-lg, 20px);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+}
+
+.section-title {
+  font-size: var(--font-size-xl, 20px);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-md, 15px);
+  border-bottom: 2px solid var(--color-primary);
+  padding-bottom: var(--space-sm, 8px);
+}
+
+// =============================================================================
+// 브레드크럼 네비게이션
+// =============================================================================
+
+.breadcrumb {
+  background-color: var(--breadcrumb-bg);
+  border-bottom: 1px solid var(--main-content-border);
+  padding: 0 var(--main-content-padding);
+  min-height: calc(var(--breadcrumb-height) * 0.75); /* 높이 줄이기 */
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  transition: var(--transition-main);
+  opacity: 0.9; /* 살짝 투명하게 */
+
+  // 스크롤 시 그림자 효과
+  &.scrolled {
+    box-shadow: var(--main-content-shadow);
+  }
+
+  .breadcrumb-list {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: var(--spacing-2, 0.5rem);
+    flex-wrap: wrap;
+    
+    .breadcrumb-item {
+      display: flex;
+      align-items: center;
+      font-size: var(--text-sm, 0.875rem);
+      line-height: 1.5;
+      
+      // 구분자 추가 (마지막 제외)
+      &:not(:last-child)::after {
+        content: '/';
+        color: var(--breadcrumb-separator);
+        margin-left: var(--spacing-2, 0.5rem);
+        font-weight: 300;
+      }
+      
+      a {
+        color: var(--breadcrumb-link);
+        text-decoration: none;
+        padding: var(--spacing-1, 0.25rem) var(--spacing-2, 0.5rem);
+        border-radius: var(--radius-sm, 0.25rem);
+        transition: var(--transition-main);
+        
+        &:hover {
+          background-color: var(--color-primary-50, rgba(59, 130, 246, 0.1));
+          text-decoration: underline;
+        }
+        
+        &:focus {
+          outline: 2px solid var(--color-primary, #3b82f6);
+          outline-offset: 2px;
+        }
+      }
+      
+      span {
+        color: var(--breadcrumb-active);
+        font-weight: 500;
+        padding: var(--spacing-1, 0.25rem) var(--spacing-2, 0.5rem);
+      }
+      
+      // 활성 상태
+      &.active {
+        font-weight: 600;
+      }
+    }
+  }
+
+  // 반응형: 모바일에서 간소화
+  @media (max-width: 480px) {
+    padding: 0 var(--spacing-4, 1rem);
+    min-height: var(--spacing-10, 2.5rem);
+    
+    .breadcrumb-list {
+      .breadcrumb-item {
+        font-size: var(--text-xs, 0.75rem);
+        
+        // 모바일에서는 마지막 2개만 표시
+        &:not(:nth-last-child(-n+2)) {
+          display: none;
+        }
+        
+        // "..." 표시
+        &:nth-last-child(3) {
+          &::before {
+            content: '...';
+            margin-right: var(--spacing-2, 0.5rem);
+          }
+        }
+      }
+    }
+  }
+}
+
+// =============================================================================
+// 메인 콘텐츠 영역
+// =============================================================================
+
+.content-area {
+  padding: var(--main-content-padding);
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  position: relative;
+  scroll-behavior: smooth;
+
+  // 스크롤바 스타일링
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--color-background-secondary);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 4px;
+    
+    &:hover {
+      background: var(--color-text-tertiary);
+    }
+  }
+
+  // 포커스 관리
+  &:focus {
+    outline: none;
+  }
+
+  // 콘텐츠 애니메이션
+  > * {
+    animation: contentFadeIn var(--animation-duration) ease-out;
+  }
+
+  // 반응형: 태블릿
+  @media (max-width: 768px) {
+    padding: var(--spacing-4, 1rem);
+  }
+
+  // 반응형: 모바일
+  @media (max-width: 480px) {
+    padding: var(--spacing-3, 0.75rem);
+  }
+}
+
+// =============================================================================
+// 로딩 오버레이
+// =============================================================================
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--loading-bg);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-loading);
+  transition: var(--transition-content);
+  
+  &.hidden {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+  }
+  
+  .loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-4, 1rem);
+    padding: var(--spacing-8, 2rem);
+    background-color: var(--main-content-bg);
+    border-radius: var(--content-border-radius);
+    box-shadow: var(--shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1));
+    border: 1px solid var(--main-content-border);
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--color-border, #e5e7eb);
+      border-top: 3px solid var(--loading-spinner);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    .loading-message {
+      font-size: var(--text-sm, 0.875rem);
+      color: var(--loading-text);
+      font-weight: 500;
+      text-align: center;
+      max-width: 200px;
+    }
+  }
+}
+
+// =============================================================================
+// 에러 컨테이너
+// =============================================================================
+
+.error-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: var(--z-error);
+  max-width: 500px;
+  width: 90%;
+  transition: var(--transition-content);
+  
+  &.hidden {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  
+  .error-content {
+    background-color: var(--error-bg);
+    border: 2px solid var(--error-border);
+    border-radius: var(--content-border-radius);
+    padding: var(--spacing-6, 1.5rem);
+    box-shadow: var(--shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.1));
+    display: flex;
+    gap: var(--spacing-4, 1rem);
+    animation: errorSlideIn var(--animation-duration) ease-out;
+    
+    .error-icon {
+      font-size: var(--text-2xl, 1.5rem);
+      color: var(--error-icon);
+      flex-shrink: 0;
+      margin-top: var(--spacing-1, 0.25rem);
+    }
+    
+    .error-details {
+      flex: 1;
+      
+      .error-title {
+        margin: 0 0 var(--spacing-2, 0.5rem) 0;
+        font-size: var(--text-lg, 1.125rem);
+        font-weight: 600;
+        color: var(--error-text);
+      }
+      
+      .error-message {
+        margin: 0 0 var(--spacing-4, 1rem) 0;
+        font-size: var(--text-sm, 0.875rem);
+        color: var(--error-text);
+        line-height: 1.5;
+      }
+      
+      .error-actions {
+        display: flex;
+        gap: var(--spacing-3, 0.75rem);
+        flex-wrap: wrap;
+        
+        button {
+          padding: var(--spacing-2, 0.5rem) var(--spacing-4, 1rem);
+          border-radius: var(--radius-md, 0.375rem);
+          font-size: var(--text-sm, 0.875rem);
+          font-weight: 500;
+          border: none;
+          cursor: pointer;
+          transition: var(--transition-main);
+          
+          &:focus {
+            outline: 2px solid var(--color-primary, #3b82f6);
+            outline-offset: 2px;
+          }
+          
+          &.btn-retry {
+            background-color: var(--color-primary, #3b82f6);
+            color: white;
+            
+            &:hover {
+              background-color: var(--color-primary-600, #2563eb);
+            }
+            
+            &:active {
+              transform: translateY(1px);
+            }
+          }
+          
+          &.btn-reload {
+            background-color: var(--color-surface, #f8fafc);
+            color: var(--color-text-secondary, #64748b);
+            border: 1px solid var(--main-content-border);
+            
+            &:hover {
+              background-color: var(--color-surface-variant, #f1f5f9);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// =============================================================================
+// 애니메이션 정의
+// =============================================================================
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes contentFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes errorSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes slideInFromBottom {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// =============================================================================
+// 유틸리티 클래스
+// =============================================================================
+
+.hidden {
+  display: none !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// 접근성: 모션 감소 설정
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .content-area > * {
+    animation: none;
+  }
+  
+  .loading-overlay,
+  .error-container {
+    transition: none;
+  }
+}
+
+// =============================================================================
+// 인쇄 스타일
+// =============================================================================
+
+@media print {
+  .main-content-container {
+    background: white;
+    color: black;
+    box-shadow: none;
+  }
+  
+  .loading-overlay,
+  .error-container {
+    display: none !important;
+  }
+  
+  .breadcrumb {
+    background: transparent;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .content-area {
+    overflow: visible;
+    height: auto;
+  }
+}
+
+// =============================================================================
+// 고대비 모드 지원
+// =============================================================================
+
+@media (prefers-contrast: high) {
+  .main-content-container {
+    border: 2px solid currentColor;
+  }
+  
+  .breadcrumb {
+    border-bottom: 2px solid currentColor;
+  }
+  
+  .error-container .error-content {
+    border-width: 3px;
+  }
+  
+  .loading-spinner .spinner {
+    border-width: 4px;
+  }
+}
+
+// =============================================================================
+// 컨테이너 쿼리 (최신 브라우저용)
+// =============================================================================
+
+@container (max-width: 600px) {
+  .breadcrumb .breadcrumb-list .breadcrumb-item {
+    font-size: var(--text-xs, 0.75rem);
+  }
+  
+  .error-container .error-content {
+    padding: var(--spacing-4, 1rem);
+    
+    .error-actions {
+      flex-direction: column;
+      
+      button {
+        width: 100%;
+      }
+    }
+  }
+}
+
+// =============================================================================
+// RTL 지원
+// =============================================================================
+
+[dir="rtl"] {
+  .breadcrumb .breadcrumb-list .breadcrumb-item {
+    &:not(:last-child)::after {
+      content: '\\';
+    }
+  }
+  
+  .error-container .error-content {
+    direction: rtl;
+  }
+}
+
+// =============================================================================
+// 디버그 모드 (개발 환경용)
+// =============================================================================
+
+[data-debug="true"] {
+  .main-content-container {
+    outline: 2px dashed red;
+  }
+  
+  .content-area {
+    outline: 2px dashed blue;
+  }
+  
+  .breadcrumb {
+    outline: 2px dashed green;
+  }
+} 

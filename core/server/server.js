@@ -192,6 +192,7 @@ class RecursiveServer {
 
     // 보안 헤더
     this.app.use(helmet({
+      frameguard: { action: 'sameorigin' }, // X-Frame-Options를 HTTP 헤더로 설정
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
@@ -229,8 +230,29 @@ class RecursiveServer {
     this.app.use(express.json({ limit: '10mb' }));
     this.app.use(express.urlencoded({ extended: true }));
 
-    // 정적 파일 서빙
+    // 정적 파일 서빙 - Public Directory
     this.app.use(express.static(path.join(__dirname, 'public')));
+    
+    // User Interface 빌드 결과물 서빙 (assets, fonts, icons 등)
+    this.app.use('/assets', express.static(path.join(__dirname, '../../modules/user-interface/build/assets')));
+    this.app.use('/fonts', express.static(path.join(__dirname, '../../modules/user-interface/build/fonts')));
+    this.app.use('/icons', express.static(path.join(__dirname, '../../modules/user-interface/build/icons')));
+    this.app.use('/images', express.static(path.join(__dirname, '../../modules/user-interface/build/images')));
+    
+    // favicon 직접 서빙
+    this.app.get('/favicon.ico', (req, res) => {
+      res.sendFile(path.join(__dirname, '../../modules/user-interface/build/favicon.ico'));
+    });
+    
+    // 메인 UI 라우팅 (SPA 지원)
+    this.app.get('/ui', (req, res) => {
+      res.sendFile(path.join(__dirname, '../../modules/user-interface/build/index.html'));
+    });
+    
+    // SPA 라우팅 지원 (모든 UI 경로를 index.html로 리다이렉트)
+    this.app.get('/ui/*', (req, res) => {
+      res.sendFile(path.join(__dirname, '../../modules/user-interface/build/index.html'));
+    });
   }
 
   setupRoutes() {
@@ -254,6 +276,27 @@ class RecursiveServer {
       });
     });
 
+    // API 헬스 체크 (프론트엔드에서 기대하는 엔드포인트)
+    this.app.get('/api/health', (req, res) => {
+      res.json({
+        status: 'healthy',
+        service: 'api',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        memory: process.memoryUsage()
+      });
+    });
+
+    // 메트릭 API 헬스 체크
+    this.app.get('/api/metrics/health', (req, res) => {
+      res.json({
+        status: 'healthy',
+        service: 'metrics',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+      });
+    });
+
     // WebSocket 메트릭
     this.app.get('/api/metrics', (req, res) => {
       if (!this.wsServer) {
@@ -268,9 +311,123 @@ class RecursiveServer {
           uptime: process.uptime(),
           memory: process.memoryUsage(),
           timestamp: new Date().toISOString()
-      }
+        }
+      });
     });
-  });
+
+    // 실시간 메트릭 데이터 (프론트엔드에서 기대하는 형식)
+    this.app.get('/api/metrics/data', (req, res) => {
+      const metrics = this.wsServer ? this.wsServer.getMetrics() : {};
+      const memoryUsage = process.memoryUsage();
+      
+      res.json({
+        timestamp: new Date().toISOString(),
+        connections: {
+          active: metrics.connections?.active || 0,
+          total: metrics.connections?.total || 0
+        },
+        messages: {
+          sent: metrics.messages?.sent || 0,
+          received: metrics.messages?.received || 0,
+          errors: metrics.messages?.errors || 0
+        },
+        performance: {
+          uptime: process.uptime(),
+          cpu: process.cpuUsage(),
+          memory: {
+            used: memoryUsage.heapUsed,
+            total: memoryUsage.heapTotal,
+            external: memoryUsage.external,
+            rss: memoryUsage.rss
+          }
+        },
+        system: {
+          nodeVersion: process.version,
+          platform: process.platform,
+          arch: process.arch
+        }
+      });
+    });
+
+    // API 서버 기능들
+    this.app.get('/api/status', (req, res) => {
+      res.json({
+        api: 'running',
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
+        services: {
+          websocket: !!this.wsServer,
+          mcp: !!this.mcpServer,
+          logSystem: !!this.logSystem,
+          aiAnalysis: !!this.aiAnalysis
+        }
+      });
+    });
+
+    // 시스템 정보 API
+    this.app.get('/api/system/info', (req, res) => {
+      res.json({
+        node: {
+          version: process.version,
+          platform: process.platform,
+          arch: process.arch,
+          uptime: process.uptime()
+        },
+        memory: process.memoryUsage(),
+        env: process.env.NODE_ENV || 'development',
+        timestamp: new Date().toISOString()
+      });
+    });
+
+    // 연결 정보 API
+    this.app.get('/api/connections', (req, res) => {
+      if (!this.wsServer) {
+        return res.status(503).json({ error: 'WebSocket server not available' });
+      }
+
+      const connections = this.wsServer.connectionHandler.getAllConnections();
+      const connectionInfo = Object.entries(connections).map(([id, conn]) => ({
+        id,
+        connected: conn.readyState === 1,
+        connectTime: conn.connectTime || new Date().toISOString(),
+        lastActivity: conn.lastActivity || new Date().toISOString()
+      }));
+
+      res.json({
+        total: connectionInfo.length,
+        active: connectionInfo.filter(c => c.connected).length,
+        connections: connectionInfo
+      });
+    });
+
+    // 메시지 전송 API
+    this.app.post('/api/broadcast', (req, res) => {
+      if (!this.wsServer) {
+        return res.status(503).json({ error: 'WebSocket server not available' });
+      }
+
+      const { message, type = 'broadcast' } = req.body;
+      
+      if (!message) {
+        return res.status(400).json({ error: 'Message is required' });
+      }
+
+      const broadcastData = {
+        type,
+        data: message,
+        from: 'api',
+        timestamp: new Date().toISOString()
+      };
+
+      const sentCount = this.wsServer.broadcast(broadcastData);
+      
+      res.json({
+        success: true,
+        sentTo: sentCount,
+        message: broadcastData,
+        timestamp: new Date().toISOString()
+      });
+    });
   
     // 클라이언트 라이브러리 다운로드
     this.app.get('/api/client-library', (req, res) => {
@@ -325,10 +482,35 @@ class RecursiveServer {
       }
     });
 
-    // 메인 대시보드
+    // 🎨 Phase 5.1: UI Module Integration
+    console.log('🎨 Setting up modular UI system...');
+    
+    // 새로운 UI 모듈을 정적 파일로 서빙
+    this.app.use('/ui', express.static(
+      path.join(__dirname, '../../modules/user-interface/build')
+    ));
+    
+    // API 라우트 추가 (UI 모듈용)
+    this.app.use('/api/ui', (req, res, next) => {
+      // UI 모듈 전용 API 엔드포인트 (향후 확장)
+      res.json({
+        message: 'UI API endpoint ready',
+        version: '2.0.0',
+        timestamp: new Date().toISOString()
+      });
+    });
+    
+    // 메인 페이지를 새 UI로 리다이렉트
     this.app.get('/', (req, res) => {
+      res.redirect('/ui');
+    });
+    
+    // 레거시 UI 접근 (호환성 유지)
+    this.app.get('/legacy', (req, res) => {
       res.sendFile(path.join(__dirname, 'public/index.html'));
     });
+    
+    console.log('✅ Modular UI system ready');
 
     // 404 핸들러
     this.app.use((req, res) => {

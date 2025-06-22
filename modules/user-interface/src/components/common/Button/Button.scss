@@ -1,0 +1,660 @@
+/**
+ * @fileoverview Button Component Styles
+ * @description 재사용 가능한 버튼 컴포넌트의 전체 스타일링
+ * @version 2.0.0
+ */
+
+// =============================================================================
+// 🎨 Variables & Mixins
+// =============================================================================
+
+:root {
+  // 색상 팔레트
+  --btn-primary: #3498db;
+  --btn-primary-hover: #2980b9;
+  --btn-primary-active: #21618c;
+  --btn-primary-disabled: #bdc3c7;
+  
+  --btn-secondary: #95a5a6;
+  --btn-secondary-hover: #7f8c8d;
+  --btn-secondary-active: #6c7b7d;
+  --btn-secondary-disabled: #d5dbdb;
+  
+  --btn-success: #2ecc71;
+  --btn-success-hover: #27ae60;
+  --btn-success-active: #1e8449;
+  --btn-success-disabled: #a9dfbf;
+  
+  --btn-warning: #f39c12;
+  --btn-warning-hover: #e67e22;
+  --btn-warning-active: #ca6f1e;
+  --btn-warning-disabled: #f8c471;
+  
+  --btn-danger: #e74c3c;
+  --btn-danger-hover: #c0392b;
+  --btn-danger-active: #922b21;
+  --btn-danger-disabled: #f1948a;
+  
+  --btn-info: #9b59b6;
+  --btn-info-hover: #8e44ad;
+  --btn-info-active: #6c3483;
+  --btn-info-disabled: #d2b4de;
+  
+  // 텍스트 색상
+  --btn-text-light: #ffffff;
+  --btn-text-dark: #2c3e50;
+  --btn-text-muted: #6c757d;
+  
+  // 배경 및 테두리
+  --btn-bg-transparent: transparent;
+  --btn-border-width: 1px;
+  --btn-border-style: solid;
+  
+  // 크기
+  --btn-height-xs: 28px;
+  --btn-height-sm: 32px;
+  --btn-height-md: 40px;
+  --btn-height-lg: 48px;
+  --btn-height-xl: 56px;
+  
+  --btn-padding-x-xs: 8px;
+  --btn-padding-x-sm: 12px;
+  --btn-padding-x-md: 16px;
+  --btn-padding-x-lg: 20px;
+  --btn-padding-x-xl: 24px;
+  
+  --btn-font-size-xs: 11px;
+  --btn-font-size-sm: 12px;
+  --btn-font-size-md: 14px;
+  --btn-font-size-lg: 16px;
+  --btn-font-size-xl: 18px;
+  
+  // 레이아웃
+  --btn-border-radius: 6px;
+  --btn-border-radius-rounded: 50px;
+  --btn-font-weight: 500;
+  --btn-line-height: 1;
+  
+  // 애니메이션
+  --btn-transition-duration: 0.15s;
+  --btn-transition-timing: ease-in-out;
+  --btn-ripple-duration: 0.6s;
+  
+  // 그림자
+  --btn-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --btn-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --btn-shadow-active: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --btn-shadow-focus: 0 0 0 3px rgba(52, 152, 219, 0.2);
+  
+  // Z-index
+  --btn-z-index: 1;
+  --btn-z-index-hover: 2;
+}
+
+// =============================================================================
+// 🎯 Base Button Styles
+// =============================================================================
+
+.btn {
+  // 기본 레이아웃
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  
+  // 기본 스타일
+  border: var(--btn-border-width) var(--btn-border-style) transparent;
+  border-radius: var(--btn-border-radius);
+  background: var(--btn-bg-transparent);
+  color: var(--btn-text-dark);
+  
+  // 폰트
+  font-family: inherit;
+  font-weight: var(--btn-font-weight);
+  line-height: var(--btn-line-height);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  
+  // 상호작용
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  
+  // 애니메이션
+  transition: all var(--btn-transition-duration) var(--btn-transition-timing);
+  
+  // 접근성
+  &:focus {
+    outline: none;
+    box-shadow: var(--btn-shadow-focus);
+    z-index: var(--btn-z-index-hover);
+  }
+  
+  &:hover {
+    z-index: var(--btn-z-index-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--btn-shadow-hover);
+  }
+  
+  &:active,
+  &.btn-pressed {
+    transform: translateY(0);
+    box-shadow: var(--btn-shadow-active);
+  }
+  
+  // 비활성화
+  &:disabled,
+  &.btn-disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none !important;
+    box-shadow: none !important;
+    pointer-events: none;
+  }
+  
+  // 활성 상태
+  &.btn-active {
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  // 포커스 상태
+  &.btn-focused {
+    box-shadow: var(--btn-shadow-focus);
+  }
+  
+  // 호버 상태
+  &.btn-hovered {
+    z-index: var(--btn-z-index-hover);
+  }
+}
+
+// =============================================================================
+// 🎯 Button Variants
+// =============================================================================
+
+// Primary
+.btn-primary {
+  background: var(--btn-primary);
+  border-color: var(--btn-primary);
+  color: var(--btn-text-light);
+  box-shadow: var(--btn-shadow);
+  
+  &:hover:not(:disabled) {
+    background: var(--btn-primary-hover);
+    border-color: var(--btn-primary-hover);
+  }
+  
+  &:active:not(:disabled),
+  &.btn-active:not(:disabled) {
+    background: var(--btn-primary-active);
+    border-color: var(--btn-primary-active);
+  }
+  
+  &:disabled {
+    background: var(--btn-primary-disabled);
+    border-color: var(--btn-primary-disabled);
+  }
+}
+
+// Secondary
+.btn-secondary {
+  background: var(--btn-secondary);
+  border-color: var(--btn-secondary);
+  color: var(--btn-text-light);
+  box-shadow: var(--btn-shadow);
+  
+  &:hover:not(:disabled) {
+    background: var(--btn-secondary-hover);
+    border-color: var(--btn-secondary-hover);
+  }
+  
+  &:active:not(:disabled),
+  &.btn-active:not(:disabled) {
+    background: var(--btn-secondary-active);
+    border-color: var(--btn-secondary-active);
+  }
+  
+  &:disabled {
+    background: var(--btn-secondary-disabled);
+    border-color: var(--btn-secondary-disabled);
+  }
+}
+
+// Outline
+.btn-outline {
+  background: var(--btn-bg-transparent);
+  border-color: var(--btn-primary);
+  color: var(--btn-primary);
+  
+  &:hover:not(:disabled) {
+    background: var(--btn-primary);
+    color: var(--btn-text-light);
+  }
+  
+  &:active:not(:disabled),
+  &.btn-active:not(:disabled) {
+    background: var(--btn-primary-active);
+    border-color: var(--btn-primary-active);
+    color: var(--btn-text-light);
+  }
+  
+  &:disabled {
+    border-color: var(--btn-primary-disabled);
+    color: var(--btn-primary-disabled);
+  }
+}
+
+// Ghost
+.btn-ghost {
+  background: var(--btn-bg-transparent);
+  border-color: transparent;
+  color: var(--btn-primary);
+  
+  &:hover:not(:disabled) {
+    background: rgba(52, 152, 219, 0.1);
+    color: var(--btn-primary-hover);
+  }
+  
+  &:active:not(:disabled),
+  &.btn-active:not(:disabled) {
+    background: rgba(52, 152, 219, 0.2);
+    color: var(--btn-primary-active);
+  }
+  
+  &:disabled {
+    color: var(--btn-primary-disabled);
+  }
+}
+
+// Success
+.btn-success {
+  background: var(--btn-success);
+  border-color: var(--btn-success);
+  color: var(--btn-text-light);
+  box-shadow: var(--btn-shadow);
+  
+  &:hover:not(:disabled) {
+    background: var(--btn-success-hover);
+    border-color: var(--btn-success-hover);
+  }
+  
+  &:active:not(:disabled),
+  &.btn-active:not(:disabled) {
+    background: var(--btn-success-active);
+    border-color: var(--btn-success-active);
+  }
+  
+  &:disabled {
+    background: var(--btn-success-disabled);
+    border-color: var(--btn-success-disabled);
+  }
+}
+
+// Warning
+.btn-warning {
+  background: var(--btn-warning);
+  border-color: var(--btn-warning);
+  color: var(--btn-text-light);
+  box-shadow: var(--btn-shadow);
+  
+  &:hover:not(:disabled) {
+    background: var(--btn-warning-hover);
+    border-color: var(--btn-warning-hover);
+  }
+  
+  &:active:not(:disabled),
+  &.btn-active:not(:disabled) {
+    background: var(--btn-warning-active);
+    border-color: var(--btn-warning-active);
+  }
+  
+  &:disabled {
+    background: var(--btn-warning-disabled);
+    border-color: var(--btn-warning-disabled);
+  }
+}
+
+// Danger
+.btn-danger {
+  background: var(--btn-danger);
+  border-color: var(--btn-danger);
+  color: var(--btn-text-light);
+  box-shadow: var(--btn-shadow);
+  
+  &:hover:not(:disabled) {
+    background: var(--btn-danger-hover);
+    border-color: var(--btn-danger-hover);
+  }
+  
+  &:active:not(:disabled),
+  &.btn-active:not(:disabled) {
+    background: var(--btn-danger-active);
+    border-color: var(--btn-danger-active);
+  }
+  
+  &:disabled {
+    background: var(--btn-danger-disabled);
+    border-color: var(--btn-danger-disabled);
+  }
+}
+
+// Info
+.btn-info {
+  background: var(--btn-info);
+  border-color: var(--btn-info);
+  color: var(--btn-text-light);
+  box-shadow: var(--btn-shadow);
+  
+  &:hover:not(:disabled) {
+    background: var(--btn-info-hover);
+    border-color: var(--btn-info-hover);
+  }
+  
+  &:active:not(:disabled),
+  &.btn-active:not(:disabled) {
+    background: var(--btn-info-active);
+    border-color: var(--btn-info-active);
+  }
+  
+  &:disabled {
+    background: var(--btn-info-disabled);
+    border-color: var(--btn-info-disabled);
+  }
+}
+
+// =============================================================================
+// 🎯 Button Sizes
+// =============================================================================
+
+.btn-xs {
+  height: var(--btn-height-xs);
+  padding: 0 var(--btn-padding-x-xs);
+  font-size: var(--btn-font-size-xs);
+  
+  .btn-icon {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+.btn-sm {
+  height: var(--btn-height-sm);
+  padding: 0 var(--btn-padding-x-sm);
+  font-size: var(--btn-font-size-sm);
+  
+  .btn-icon {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.btn-md {
+  height: var(--btn-height-md);
+  padding: 0 var(--btn-padding-x-md);
+  font-size: var(--btn-font-size-md);
+  
+  .btn-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.btn-lg {
+  height: var(--btn-height-lg);
+  padding: 0 var(--btn-padding-x-lg);
+  font-size: var(--btn-font-size-lg);
+  
+  .btn-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.btn-xl {
+  height: var(--btn-height-xl);
+  padding: 0 var(--btn-padding-x-xl);
+  font-size: var(--btn-font-size-xl);
+  
+  .btn-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// =============================================================================
+// 🎯 Button Modifiers
+// =============================================================================
+
+// 전체 너비
+.btn-full-width {
+  width: 100%;
+}
+
+// 원형 버튼
+.btn-rounded {
+  border-radius: var(--btn-border-radius-rounded);
+}
+
+// 로딩 상태
+.btn-loading {
+  pointer-events: none;
+  
+  .btn-text,
+  .btn-icon:not(.btn-loading-icon) {
+    opacity: 0;
+  }
+}
+
+// =============================================================================
+// 🎯 Button Content Elements
+// =============================================================================
+
+.btn-text {
+  display: inline-block;
+  transition: opacity var(--btn-transition-duration) var(--btn-transition-timing);
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: opacity var(--btn-transition-duration) var(--btn-transition-timing);
+  
+  svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+  }
+  
+  &.btn-icon-only {
+    margin: 0;
+  }
+  
+  &.btn-icon-left {
+    margin-right: 4px;
+  }
+  
+  &.btn-icon-right {
+    margin-left: 4px;
+  }
+}
+
+// =============================================================================
+// 🎯 Loading States
+// =============================================================================
+
+.btn-loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-loading-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  
+  .loading-spinner {
+    width: 100%;
+    height: 100%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+.btn-loading-text {
+  display: inline-block;
+}
+
+// =============================================================================
+// 🎯 Ripple Effect
+// =============================================================================
+
+.btn-ripple-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.btn-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(0);
+  animation: ripple var(--btn-ripple-duration) ease-out;
+  pointer-events: none;
+}
+
+// =============================================================================
+// 🎯 Animations
+// =============================================================================
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+// =============================================================================
+// 🎯 Dark Theme Support
+// =============================================================================
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --btn-text-dark: #ffffff;
+    --btn-text-light: #2c3e50;
+    --btn-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --btn-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --btn-shadow-active: 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+}
+
+// =============================================================================
+// 🎯 High Contrast Support
+// =============================================================================
+
+@media (prefers-contrast: high) {
+  .btn {
+    border-width: 2px;
+    
+    &:focus {
+      outline: 3px solid currentColor;
+      outline-offset: 2px;
+    }
+  }
+}
+
+// =============================================================================
+// 🎯 Reduced Motion Support
+// =============================================================================
+
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+    
+    &:hover {
+      transform: none;
+    }
+    
+    &:active,
+    &.btn-pressed {
+      transform: none;
+    }
+  }
+  
+  .btn-ripple {
+    animation: none;
+  }
+  
+  .loading-spinner {
+    animation: none;
+  }
+}
+
+// =============================================================================
+// 🎯 Print Styles
+// =============================================================================
+
+@media print {
+  .btn {
+    color: #000 !important;
+    background: transparent !important;
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+  }
+  
+  .btn-loading-icon,
+  .btn-ripple-container {
+    display: none !important;
+  }
+}
+
+// =============================================================================
+// 🎯 Mobile Optimizations
+// =============================================================================
+
+@media (max-width: 768px) {
+  .btn {
+    min-height: 44px; // iOS 접근성 최소 터치 영역
+    
+    &.btn-xs {
+      height: 36px;
+    }
+    
+    &.btn-sm {
+      height: 40px;
+    }
+  }
+}
+
+// =============================================================================
+// 🎯 Component Registry Integration
+// =============================================================================
+
+.btn-component {
+  // 컴포넌트 레지스트리와의 통합을 위한 기본 클래스
+  &[data-component="button"] {
+    position: relative; // 추가 스타일이 필요한 경우 여기에 작성
+  }
+} 

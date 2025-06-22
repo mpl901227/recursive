@@ -1,0 +1,554 @@
+@use "@/styles/variables";
+@use "@/styles/mixins";
+/**
+ * Sidebar Component Styles
+ * 사이드바 컴포넌트 스타일링
+ */
+
+.sidebar {
+  grid-area: sidebar;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-right: 1px solid #e2e8f0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: var(--z-index-20);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  
+  &.sidebar-collapsed {
+    border-right: none;
+    overflow: hidden;
+    box-shadow: none;
+    
+    // 접힌 상태에서 모든 메뉴 컨텐츠 숨기기
+    .sidebar-content {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(-100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    // 메뉴 항목들 완전히 숨기기
+    .sidebar-menu {
+      display: none;
+    }
+    
+    // 헤더도 숨기기
+    .sidebar-header {
+      display: none;
+    }
+  }
+
+  &.sidebar-resizing {
+    user-select: none;
+    transition: none;
+    
+    * {
+      pointer-events: none;
+    }
+  }
+
+  // Modern scrollbar styling
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.4);
+    border-radius: 10px;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: rgba(148, 163, 184, 0.6);
+    }
+  }
+
+  .sidebar-content {
+    padding: 24px 16px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    
+    .sidebar-title {
+      font-size: 18px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 0;
+    }
+  }
+
+  .sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex: 1;
+
+    .menu-item {
+      margin-bottom: 4px;
+      position: relative;
+
+      // Modern glassmorphism menu items
+      .menu-link,
+      .menu-button {
+        display: flex;
+        align-items: center;
+        padding: 14px 18px;
+        border-radius: 14px;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        text-decoration: none;
+        color: #475569;
+        border: none;
+        background: rgba(255, 255, 255, 0.5);
+        width: 100%;
+        text-align: left;
+        font-size: 15px;
+        font-weight: 500;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(8px);
+        position: relative;
+        overflow: hidden;
+
+        // Subtle shadow
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+        // Hover effect with spring animation
+        &:hover {
+          background: rgba(59, 130, 246, 0.12);
+          color: #1e40af;
+          transform: translateX(8px) scale(1.02);
+          border-color: rgba(59, 130, 246, 0.3);
+          box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+        }
+
+        // Active state with gradient and glow
+        &.active,
+        &:focus {
+          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+          color: white;
+          outline: none;
+          transform: translateX(0) scale(1);
+          border-color: #2563eb;
+          box-shadow: 
+            0 8px 25px rgba(59, 130, 246, 0.25),
+            0 0 0 3px rgba(59, 130, 246, 0.1);
+
+          // Glow effect
+          &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
+            border-radius: inherit;
+            pointer-events: none;
+          }
+        }
+
+        &:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+          transform: none;
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.5);
+            color: #475569;
+            transform: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+          }
+        }
+
+        .expand-icon {
+          width: 18px;
+          height: 18px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          color: currentColor;
+          transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+          margin-right: 10px;
+          opacity: 0.7;
+        }
+
+        .menu-icon {
+          width: 22px;
+          height: 22px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 16px;
+          margin-right: 14px;
+          opacity: 0.9;
+        }
+
+        .menu-text {
+          flex: 1;
+          font-weight: 500;
+          letter-spacing: 0.01em;
+        }
+
+        .menu-badge {
+          background: linear-gradient(135deg, #ef4444, #dc2626);
+          color: white;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 4px 8px;
+          border-radius: 10px;
+          min-width: 20px;
+          text-align: center;
+          margin-left: 10px;
+          box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+        }
+      }
+
+      // Glassmorphism children container
+      .menu-children {
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        background: linear-gradient(135deg, rgba(248, 250, 252, 0.8), rgba(241, 245, 249, 0.6));
+        border-radius: 12px;
+        border: 1px solid rgba(226, 232, 240, 0.5);
+        backdrop-filter: blur(12px);
+        
+        // 기본 상태 (collapsed)
+        height: 0;
+        opacity: 0;
+        padding: 0;
+        margin: 0;
+        border-width: 0;
+        
+        &.expanded {
+          opacity: 1;
+          padding: 8px;
+          margin: 6px 0 6px 12px;
+          border-width: 1px;
+          height: auto; // 초기 렌더링 시 자동 높이
+          // height는 JavaScript에서 애니메이션용으로 동적 설정
+        }
+        
+        &.collapsed {
+          height: 0 !important;
+          opacity: 0;
+          padding: 0;
+          margin: 0;
+          border-width: 0;
+        }
+      }
+
+      // Nested menu items with enhanced styling
+      &.sub-item {
+        .menu-link,
+        .menu-button {
+          padding: 10px 16px;
+          font-size: 14px;
+          border-radius: 10px;
+          margin: 3px 0;
+          background: rgba(255, 255, 255, 0.7);
+          border: 1px solid rgba(255, 255, 255, 0.5);
+          transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+          &:hover {
+            background: rgba(139, 92, 246, 0.1);
+            color: #7c3aed;
+            transform: translateX(6px) scale(1.01);
+            border-color: rgba(139, 92, 246, 0.2);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.1);
+          }
+
+          &.active {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            font-weight: 600;
+            transform: translateX(0) scale(1);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+          }
+        }
+        
+        // Progressive indentation with visual hierarchy
+        &.level-1 .menu-link,
+        &.level-1 .menu-button {
+          padding-left: 24px;
+          border-left: 3px solid rgba(139, 92, 246, 0.2);
+        }
+        
+        &.level-2 .menu-link,
+        &.level-2 .menu-button {
+          padding-left: 32px;
+          border-left: 3px solid rgba(168, 85, 247, 0.2);
+        }
+        
+        &.level-3 .menu-link,
+        &.level-3 .menu-button {
+          padding-left: 40px;
+          border-left: 3px solid rgba(147, 51, 234, 0.2);
+        }
+      }
+
+      // Enhanced expansion animation
+      &.has-children {
+        > .menu-link .expand-icon,
+        > .menu-button .expand-icon {
+          transform: rotate(0deg);
+          background: rgba(59, 130, 246, 0.1);
+          border-radius: 6px;
+          padding: 2px;
+        }
+        
+        &.expanded {
+          > .menu-link .expand-icon,
+          > .menu-button .expand-icon {
+            transform: rotate(90deg);
+            background: rgba(59, 130, 246, 0.2);
+          }
+        }
+      }
+    }
+  }
+
+  .sidebar-footer {
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--spacing-4);
+    margin-top: auto;
+
+    .footer-info {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+      text-align: center;
+      line-height: var(--line-height-loose);
+    }
+  }
+
+  // 리사이즈 핸들
+  .resize-handle {
+    position: absolute;
+    top: 0;
+    right: -2px;
+    bottom: 0;
+    width: 4px;
+    cursor: col-resize;
+    background: transparent;
+    transition: var(--transition-base);
+
+    &:hover,
+    &.resizing {
+      background: var(--color-primary);
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 1px;
+      height: 30px;
+      background: var(--color-border);
+      transition: var(--transition-base);
+    }
+
+    &:hover::before,
+    &.resizing::before {
+      background: var(--color-white);
+    }
+  }
+
+  // Mobile sidebar overlay - Grid 시스템과 분리
+  @media (max-width: 768px) {
+    position: fixed;
+    top: var(--header-height, 64px);
+    left: 0;
+    height: calc(100vh - var(--header-height, 64px));
+    z-index: 999;
+    width: var(--sidebar-width, 280px);
+    transform: translateX(-100%);
+    transition: transform var(--transition-base);
+    box-shadow: var(--shadow-xl);
+    grid-area: none; // Grid 시스템에서 제외
+
+    &.sidebar-open {
+      transform: translateX(0);
+    }
+
+    &.sidebar-collapsed {
+      // 모바일에서는 항상 숨김 상태
+      transform: translateX(-100%);
+    }
+
+    .resize-handle {
+      display: none; // 모바일에서 리사이즈 비활성화
+    }
+  }
+}
+
+// 모바일 오버레이
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--color-shadow);
+  z-index: var(--z-index-40);
+  opacity: 0;
+  transition: var(--transition-base);
+
+  &.active {
+    opacity: 1;
+  }
+
+  @media (max-width: 768px) {
+    display: block;
+  }
+}
+
+// Dark theme with modern glassmorphism design
+:root.theme-dark .sidebar {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+  border-right-color: #334155 !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+
+  .sidebar-header {
+    background: rgba(15, 23, 42, 0.8) !important;
+    border-color: rgba(51, 65, 85, 0.6) !important;
+    backdrop-filter: blur(15px) !important;
+
+    .sidebar-title {
+      background: linear-gradient(135deg, #60a5fa, #3b82f6) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      background-clip: text !important;
+    }
+  }
+
+  .menu-item {
+    .menu-link,
+    .menu-button {
+      background: rgba(15, 23, 42, 0.7) !important;
+      color: #cbd5e1 !important;
+      border-color: rgba(51, 65, 85, 0.6) !important;
+      backdrop-filter: blur(10px) !important;
+
+      &:hover {
+        background: rgba(59, 130, 246, 0.2) !important;
+        color: #60a5fa !important;
+        border-color: rgba(59, 130, 246, 0.4) !important;
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.25) !important;
+      }
+
+      &.active,
+      &:focus {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%) !important;
+        color: white !important;
+        border-color: #2563eb !important;
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.35), 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
+      }
+    }
+
+    .menu-children {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.7)) !important;
+      border-color: rgba(51, 65, 85, 0.4) !important;
+      backdrop-filter: blur(15px) !important;
+    }
+
+    &.sub-item {
+      .menu-link,
+      .menu-button {
+        background: rgba(15, 23, 42, 0.8) !important;
+        color: #94a3b8 !important;
+        border-color: rgba(51, 65, 85, 0.4) !important;
+
+        &:hover {
+          background: rgba(139, 92, 246, 0.2) !important;
+          color: #a78bfa !important;
+          border-color: rgba(139, 92, 246, 0.4) !important;
+          box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2) !important;
+        }
+
+        &.active {
+          background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
+          color: white !important;
+          box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4) !important;
+        }
+
+        &.level-1 {
+          border-left-color: rgba(139, 92, 246, 0.4) !important;
+        }
+
+        &.level-2 {
+          border-left-color: rgba(168, 85, 247, 0.4) !important;
+        }
+
+        &.level-3 {
+          border-left-color: rgba(147, 51, 234, 0.4) !important;
+        }
+      }
+    }
+
+    &.has-children {
+      > .menu-link .expand-icon,
+      > .menu-button .expand-icon {
+        background: rgba(59, 130, 246, 0.2) !important;
+      }
+      
+      &.expanded {
+        > .menu-link .expand-icon,
+        > .menu-button .expand-icon {
+          background: rgba(59, 130, 246, 0.3) !important;
+        }
+      }
+    }
+  }
+
+  .sidebar-footer {
+    border-top-color: rgba(51, 65, 85, 0.6) !important;
+    
+    .footer-info {
+      color: #64748b !important;
+    }
+  }
+
+  .resize-handle {
+    &:hover,
+    &.resizing {
+      background: #3b82f6 !important;
+    }
+
+    &::before {
+      background: rgba(51, 65, 85, 0.6) !important;
+    }
+
+    &:hover::before,
+    &.resizing::before {
+      background: white !important;
+    }
+  }
+}

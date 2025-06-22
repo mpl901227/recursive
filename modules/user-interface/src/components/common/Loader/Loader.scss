@@ -1,0 +1,677 @@
+/**
+ * @fileoverview Loader Component Styles
+ * @description 다양한 로딩 스피너와 애니메이션 스타일
+ * @version 2.0.0
+ */
+
+// =============================================================================
+// 🎨 Variables & Mixins
+// =============================================================================
+
+:root {
+  // 색상 팔레트
+  --loader-primary: #3498db;
+  --loader-secondary: #95a5a6;
+  --loader-success: #2ecc71;
+  --loader-warning: #f39c12;
+  --loader-error: #e74c3c;
+  --loader-info: #9b59b6;
+  
+  // 크기
+  --loader-size-small: 20px;
+  --loader-size-medium: 40px;
+  --loader-size-large: 60px;
+  
+  // 애니메이션
+  --loader-animation-duration: 1s;
+  --loader-animation-easing: ease-in-out;
+  
+  // 오버레이
+  --loader-overlay-bg: rgba(255, 255, 255, 0.9);
+  --loader-overlay-bg-dark: rgba(0, 0, 0, 0.8);
+  
+  // 텍스트
+  --loader-text-color: #666;
+  --loader-text-size: 14px;
+  
+  // 그림자
+  --loader-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+@mixin loader-size($size) {
+  width: $size;
+  height: $size;
+}
+
+@mixin loader-animation($name, $duration: var(--loader-animation-duration)) {
+  animation: $name $duration infinite;
+}
+
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+// =============================================================================
+// 🎯 Base Loader Styles
+// =============================================================================
+
+.loader {
+  @include flex-center;
+  flex-direction: column;
+  gap: 16px;
+  
+  &.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+  
+  &:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+}
+
+// =============================================================================
+// 🎯 Overlay Styles
+// =============================================================================
+
+.loader-inline {
+  position: relative;
+}
+
+.loader-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--loader-overlay-bg);
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.loader-full {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--loader-overlay-bg);
+  z-index: 9999;
+  backdrop-filter: blur(3px);
+}
+
+// =============================================================================
+// 🎯 Size Variations
+// =============================================================================
+
+.loader-small .loader-content {
+  --size: var(--loader-size-small);
+}
+
+.loader-medium .loader-content {
+  --size: var(--loader-size-medium);
+}
+
+.loader-large .loader-content {
+  --size: var(--loader-size-large);
+}
+
+// =============================================================================
+// 🎯 Theme Variations
+// =============================================================================
+
+.loader-primary { --loader-color: var(--loader-primary); }
+.loader-secondary { --loader-color: var(--loader-secondary); }
+.loader-success { --loader-color: var(--loader-success); }
+.loader-warning { --loader-color: var(--loader-warning); }
+.loader-error { --loader-color: var(--loader-error); }
+.loader-info { --loader-color: var(--loader-info); }
+
+// =============================================================================
+// 🎯 Loader Content
+// =============================================================================
+
+.loader-content {
+  @include flex-center;
+  color: var(--loader-color);
+}
+
+// =============================================================================
+// 🎯 Spinner Loader
+// =============================================================================
+
+.loader-spinner .spinner {
+  @include loader-size(var(--size));
+  position: relative;
+}
+
+.spinner-border {
+  @include loader-size(100%);
+  border: 3px solid transparent;
+  border-top-color: var(--loader-color);
+  border-radius: 50%;
+  @include loader-animation(spin);
+}
+
+.loader-spinner.loader-small .spinner-border {
+  border-width: 2px;
+}
+
+.loader-spinner.loader-large .spinner-border {
+  border-width: 4px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// =============================================================================
+// 🎯 Dots Loader
+// =============================================================================
+
+.loader-dots .dots-loader {
+  @include flex-center;
+  gap: 8px;
+}
+
+.dots-loader .dot {
+  @include loader-size(calc(var(--size) * 0.2));
+  background: var(--loader-color);
+  border-radius: 50%;
+  @include loader-animation(dot-bounce, 1.4s);
+  
+  &:nth-child(1) { animation-delay: -0.32s; }
+  &:nth-child(2) { animation-delay: -0.16s; }
+  &:nth-child(3) { animation-delay: 0s; }
+}
+
+@keyframes dot-bounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// =============================================================================
+// 🎯 Pulse Loader
+// =============================================================================
+
+.loader-pulse .pulse-loader {
+  @include flex-center;
+  position: relative;
+}
+
+.pulse-circle {
+  @include loader-size(var(--size));
+  background: var(--loader-color);
+  border-radius: 50%;
+  @include loader-animation(pulse);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+// =============================================================================
+// 🎯 Progress Loader
+// =============================================================================
+
+.loader-progress .progress-loader {
+  width: 200px;
+  
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(var(--loader-color), 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background: var(--loader-color);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    position: relative;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+      );
+      animation: shimmer 1.5s infinite;
+    }
+  }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+// =============================================================================
+// 🎯 Skeleton Loader
+// =============================================================================
+
+.loader-skeleton .skeleton-loader {
+  width: 300px;
+  padding: 16px;
+}
+
+.skeleton-line {
+  height: 16px;
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  @include loader-animation(skeleton-loading, 1.5s);
+  
+  &.skeleton-line-title {
+    height: 20px;
+    width: 60%;
+  }
+  
+  &.skeleton-line-text {
+    height: 14px;
+    width: 100%;
+  }
+  
+  &.short {
+    width: 75%;
+  }
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+// =============================================================================
+// 🎯 Bars Loader
+// =============================================================================
+
+.loader-bars .bars-loader {
+  @include flex-center;
+  gap: 4px;
+  height: var(--size);
+}
+
+.bars-loader .bar {
+  width: calc(var(--size) * 0.1);
+  height: 100%;
+  background: var(--loader-color);
+  border-radius: 2px;
+  @include loader-animation(bar-scale, 1.2s);
+  
+  &:nth-child(1) { animation-delay: 0s; }
+  &:nth-child(2) { animation-delay: 0.1s; }
+  &:nth-child(3) { animation-delay: 0.2s; }
+  &:nth-child(4) { animation-delay: 0.3s; }
+  &:nth-child(5) { animation-delay: 0.4s; }
+}
+
+@keyframes bar-scale {
+  0%, 40%, 100% {
+    transform: scaleY(0.4);
+  }
+  20% {
+    transform: scaleY(1);
+  }
+}
+
+// =============================================================================
+// 🎯 Ring Loader
+// =============================================================================
+
+.loader-ring .ring-loader {
+  @include loader-size(var(--size));
+  position: relative;
+}
+
+.ring-loader .ring {
+  position: absolute;
+  border: 3px solid var(--loader-color);
+  border-radius: 50%;
+  @include loader-animation(ring-spin, 1.2s);
+  
+  &:nth-child(1) {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    animation-delay: -0.45s;
+  }
+  
+  &:nth-child(2) {
+    top: 10%;
+    left: 10%;
+    right: 10%;
+    bottom: 10%;
+    animation-delay: -0.3s;
+  }
+  
+  &:nth-child(3) {
+    top: 20%;
+    left: 20%;
+    right: 20%;
+    bottom: 20%;
+    animation-delay: -0.15s;
+  }
+  
+  &:nth-child(4) {
+    top: 30%;
+    left: 30%;
+    right: 30%;
+    bottom: 30%;
+    animation-delay: 0s;
+  }
+}
+
+@keyframes ring-spin {
+  0% {
+    transform: rotate(0deg);
+    border-color: var(--loader-color) transparent transparent transparent;
+  }
+  25% {
+    border-color: transparent var(--loader-color) transparent transparent;
+  }
+  50% {
+    border-color: transparent transparent var(--loader-color) transparent;
+  }
+  75% {
+    border-color: transparent transparent transparent var(--loader-color);
+  }
+  100% {
+    transform: rotate(360deg);
+    border-color: var(--loader-color) transparent transparent transparent;
+  }
+}
+
+// =============================================================================
+// 🎯 Message & Progress Text
+// =============================================================================
+
+.loader-message {
+  color: var(--loader-text-color);
+  font-size: var(--loader-text-size);
+  text-align: center;
+  margin-top: 16px;
+  max-width: 300px;
+  line-height: 1.4;
+}
+
+.loader-progress {
+  margin-top: 16px;
+  min-width: 200px;
+}
+
+.progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.progress-text {
+  color: var(--loader-text-color);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+// =============================================================================
+// 🎯 Dark Theme Support
+// =============================================================================
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --loader-overlay-bg: var(--loader-overlay-bg-dark);
+    --loader-text-color: #ccc;
+  }
+  
+  .skeleton-line {
+    background: linear-gradient(
+      90deg,
+      #2a2a2a 25%,
+      #3a3a3a 50%,
+      #2a2a2a 75%
+    );
+  }
+}
+
+.dark {
+  --loader-overlay-bg: var(--loader-overlay-bg-dark);
+  --loader-text-color: #ccc;
+  
+  .skeleton-line {
+    background: linear-gradient(
+      90deg,
+      #2a2a2a 25%,
+      #3a3a3a 50%,
+      #2a2a2a 75%
+    );
+  }
+}
+
+// =============================================================================
+// 🎯 Accessibility
+// =============================================================================
+
+@media (prefers-reduced-motion: reduce) {
+  .loader * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .progress-fill::after {
+    display: none;
+  }
+}
+
+// 고대비 모드
+@media (prefers-contrast: high) {
+  .loader {
+    --loader-primary: #0066cc;
+    --loader-success: #006600;
+    --loader-warning: #cc6600;
+    --loader-error: #cc0000;
+  }
+  
+  .spinner-border {
+    border-width: 4px;
+  }
+}
+
+// 스크린 리더용 숨김 텍스트
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// =============================================================================
+// 🎯 Responsive Design
+// =============================================================================
+
+@media (max-width: 768px) {
+  .loader-message {
+    font-size: 12px;
+    max-width: 250px;
+  }
+  
+  .loader-progress {
+    min-width: 150px;
+  }
+  
+  .skeleton-loader {
+    width: 250px;
+    padding: 12px;
+  }
+  
+  // 모바일에서 크기 조정
+  .loader-small .loader-content { --size: 16px; }
+  .loader-medium .loader-content { --size: 32px; }
+  .loader-large .loader-content { --size: 48px; }
+}
+
+@media (max-width: 480px) {
+  .loader-overlay,
+  .loader-full {
+    padding: 16px;
+  }
+  
+  .loader-message {
+    font-size: 11px;
+    max-width: 200px;
+  }
+  
+  .skeleton-loader {
+    width: 200px;
+    padding: 8px;
+  }
+}
+
+// =============================================================================
+// 🎯 Print Styles
+// =============================================================================
+
+@media print {
+  .loader {
+    display: none !important;
+  }
+}
+
+// =============================================================================
+// 🎯 Hover Effects (for interactive loaders)
+// =============================================================================
+
+.loader-overlay:hover,
+.loader-full:hover {
+  .spinner-border {
+    animation-duration: 0.5s;
+  }
+  
+  .dots-loader .dot {
+    animation-duration: 0.7s;
+  }
+  
+  .pulse-circle {
+    animation-duration: 0.5s;
+  }
+}
+
+// =============================================================================
+// 🎯 Focus Management
+// =============================================================================
+
+.loader[tabindex] {
+  outline: none;
+  
+  &:focus {
+    .loader-content {
+      outline: 2px solid var(--loader-color);
+      outline-offset: 4px;
+      border-radius: 4px;
+    }
+  }
+}
+
+// =============================================================================
+// 🎯 Error States
+// =============================================================================
+
+.loader.error {
+  .loader-content {
+    color: var(--loader-error);
+  }
+  
+  .loader-message {
+    color: var(--loader-error);
+  }
+  
+  .progress-fill {
+    background: var(--loader-error);
+  }
+}
+
+// =============================================================================
+// 🎯 Success States
+// =============================================================================
+
+.loader.success {
+  .loader-content {
+    color: var(--loader-success);
+  }
+  
+  .loader-message {
+    color: var(--loader-success);
+  }
+  
+  .progress-fill {
+    background: var(--loader-success);
+  }
+}
+
+// =============================================================================
+// 🎯 Animation Performance Optimizations
+// =============================================================================
+
+.loader * {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+// GPU 가속 활성화
+.spinner-border,
+.dot,
+.pulse-circle,
+.bar,
+.ring {
+  transform: translate3d(0, 0, 0);
+}

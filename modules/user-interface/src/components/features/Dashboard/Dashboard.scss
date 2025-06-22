@@ -1,0 +1,870 @@
+/**
+ * @fileoverview Dashboard Component Styles
+ * @description 대시보드 컴포넌트의 스타일 정의
+ * @version 2.0.0
+ */
+
+// =============================================================================
+// 🎨 CSS Variables (Dashboard)
+// =============================================================================
+
+:root {
+  // Dashboard Layout
+  --dashboard-header-height: 72px;
+  --dashboard-padding: 24px;
+  --dashboard-gap: 16px;
+  --dashboard-border-radius: 12px;
+  
+  // Widget Variables
+  --widget-padding: 16px;
+  --widget-border-radius: 8px;
+  --widget-border: 1px solid var(--border-color);
+  --widget-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --widget-hover-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  
+  // Grid System
+  --grid-columns: 4;
+  --grid-gap: var(--dashboard-gap);
+  --grid-min-height: 200px;
+  
+  // Colors
+  --dashboard-bg: var(--background-primary);
+  --widget-bg: var(--background-secondary);
+  --widget-header-bg: var(--background-tertiary);
+  --widget-border-color: var(--border-color);
+  
+  // Animations
+  --dashboard-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --widget-transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  // Status Colors
+  --status-good: #10b981;
+  --status-warning: #f59e0b;
+  --status-error: #ef4444;
+  --status-info: #3b82f6;
+}
+
+// Dark theme adjustments
+[data-theme="dark"] {
+  --widget-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --widget-hover-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+// =============================================================================
+// 🏗️ Dashboard Container
+// =============================================================================
+
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--dashboard-bg);
+  overflow: hidden;
+}
+
+// =============================================================================
+// 📋 Dashboard Header
+// =============================================================================
+
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--dashboard-header-height);
+  padding: 0 var(--dashboard-padding);
+  background: var(--widget-bg);
+  border-bottom: var(--widget-border);
+  flex-shrink: 0;
+
+  .dashboard-title {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .dashboard-subtitle {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+  }
+}
+
+// =============================================================================
+// 🔧 Dashboard Toolbar
+// =============================================================================
+
+.dashboard-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &:not(:last-child) {
+      padding-right: 12px;
+      border-right: 1px solid var(--border-color);
+    }
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: var(--dashboard-transition);
+
+    .btn-icon {
+      font-size: 1rem;
+    }
+
+    .btn-text {
+      @media (max-width: 768px) {
+        display: none;
+      }
+    }
+
+    &.edit-toggle.active {
+      background: var(--primary-color);
+      color: white;
+    }
+  }
+}
+
+// =============================================================================
+// 📊 Dashboard Content
+// =============================================================================
+
+.dashboard-content {
+  flex: 1;
+  padding: var(--dashboard-padding);
+  overflow: auto;
+  position: relative;
+}
+
+// =============================================================================
+// 🏗️ Widget Grid System
+// =============================================================================
+
+.widget-grid {
+  display: grid;
+  gap: var(--grid-gap);
+  min-height: 100%;
+
+  // Grid Layout
+  &.grid {
+    grid-template-columns: repeat(var(--grid-columns), 1fr);
+    grid-auto-rows: minmax(var(--grid-min-height), auto);
+  }
+
+  // Masonry Layout (CSS Grid approximation)
+  &.masonry {
+    grid-template-columns: repeat(var(--grid-columns), 1fr);
+    grid-auto-rows: 50px; // Small rows for masonry effect
+  }
+
+  // Flex Layout
+  &.flex {
+    display: flex;
+    flex-wrap: wrap;
+    
+    .dashboard-widget {
+      flex: 1 1 calc(25% - var(--grid-gap));
+      min-width: 300px;
+    }
+  }
+
+  // Responsive adjustments
+  @media (max-width: 1200px) {
+    --grid-columns: 3;
+  }
+
+  @media (max-width: 768px) {
+    --grid-columns: 2;
+    gap: 12px;
+  }
+
+  @media (max-width: 480px) {
+    --grid-columns: 1;
+    gap: 8px;
+  }
+}
+
+// Edit mode
+.dashboard-container.edit-mode {
+  .widget-grid {
+    .dashboard-widget {
+      border: 2px dashed var(--primary-color);
+      cursor: move;
+
+      &:hover {
+        border-color: var(--primary-dark);
+        transform: scale(1.02);
+      }
+
+      .widget-controls {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+// =============================================================================
+// 🎛️ Dashboard Widget
+// =============================================================================
+
+.dashboard-widget {
+  background: var(--widget-bg);
+  border: var(--widget-border);
+  border-radius: var(--widget-border-radius);
+  box-shadow: var(--widget-shadow);
+  overflow: hidden;
+  transition: var(--widget-transition);
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    box-shadow: var(--widget-hover-shadow);
+    transform: translateY(-2px);
+  }
+
+  // Widget sizes
+  &.widget-small {
+    min-height: 150px;
+  }
+
+  &.widget-medium {
+    min-height: 200px;
+  }
+
+  &.widget-large {
+    min-height: 300px;
+  }
+
+  &.widget-extra-large {
+    min-height: 400px;
+  }
+}
+
+// =============================================================================
+// 📋 Widget Header
+// =============================================================================
+
+.widget-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px var(--widget-padding);
+  background: var(--widget-header-bg);
+  border-bottom: 1px solid var(--widget-border-color);
+  flex-shrink: 0;
+
+  .widget-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .widget-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+
+    .widget-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border: none;
+      background: transparent;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: background 0.2s ease;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.1);
+      }
+
+      &.remove-btn:hover {
+        background: var(--danger-color);
+        color: white;
+      }
+    }
+  }
+
+  &:hover .widget-controls {
+    opacity: 1;
+  }
+}
+
+// =============================================================================
+// 📊 Widget Content
+// =============================================================================
+
+.widget-content {
+  flex: 1;
+  padding: var(--widget-padding);
+  position: relative;
+  overflow: hidden;
+
+  .widget-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-secondary);
+
+    .loading-spinner {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--border-color);
+      border-top: 2px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+    }
+  }
+
+  .widget-data {
+    height: 100%;
+  }
+
+  .widget-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--danger-color);
+    font-size: 0.875rem;
+
+    .error-icon {
+      margin-right: 8px;
+    }
+
+    &.hidden {
+      display: none;
+    }
+  }
+
+  &.hidden {
+    display: none;
+  }
+}
+
+// =============================================================================
+// 📈 Widget Types - Metric
+// =============================================================================
+
+.metric-widget {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .metric-primary {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 16px;
+
+    .metric-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .metric-unit {
+      font-size: 1rem;
+      color: var(--text-secondary);
+    }
+
+    .metric-trend {
+      font-size: 1.2rem;
+      margin-left: auto;
+    }
+  }
+
+  .metric-sparkline {
+    display: flex;
+    align-items: end;
+    height: 40px;
+    gap: 2px;
+    flex: 1;
+
+    .spark-bar {
+      flex: 1;
+      background: var(--primary-color);
+      border-radius: 1px;
+      opacity: 0.7;
+      transform-origin: bottom;
+      animation: sparklineGrow 0.5s ease-out forwards;
+    }
+  }
+}
+
+@keyframes sparklineGrow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+// =============================================================================
+// 📊 Widget Types - Chart
+// =============================================================================
+
+.chart-widget {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .chart-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+
+    .stat {
+      text-align: center;
+
+      .stat-label {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        margin-bottom: 4px;
+      }
+
+      .stat-value {
+        display: block;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+    }
+  }
+
+  .chart-area {
+    flex: 1;
+    display: flex;
+    align-items: end;
+    justify-content: center;
+  }
+
+  .simple-chart {
+    display: flex;
+    align-items: end;
+    height: 80px;
+    width: 100%;
+    gap: 2px;
+
+    .chart-bar {
+      flex: 1;
+      background: linear-gradient(to top, var(--primary-color), var(--primary-light));
+      border-radius: 2px 2px 0 0;
+      transform-origin: bottom;
+      animation: chartBarGrow 0.6s ease-out forwards;
+    }
+  }
+
+  .no-chart {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+}
+
+@keyframes chartBarGrow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+// =============================================================================
+// ⚡ Widget Types - Status
+// =============================================================================
+
+.status-widget {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .status-overview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+
+    &.status-good {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+
+      .status-indicator {
+        background: var(--status-good);
+      }
+    }
+
+    &.status-warning {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+
+      .status-indicator {
+        background: var(--status-warning);
+      }
+    }
+
+    &.status-error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+
+      .status-indicator {
+        background: var(--status-error);
+      }
+    }
+
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .status-text {
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+  }
+
+  .status-details {
+    flex: 1;
+
+    .detail-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-color);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .detail-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+      }
+
+      .detail-value {
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+    }
+  }
+}
+
+// =============================================================================
+// 📈 Widget Types - Activity
+// =============================================================================
+
+.activity-widget {
+  height: 100%;
+
+  .activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .activity-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 8px;
+      background: var(--background-tertiary);
+      border-radius: 4px;
+
+      .activity-time {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+      }
+
+      .activity-desc {
+        font-size: 0.875rem;
+        color: var(--text-primary);
+      }
+    }
+  }
+}
+
+// =============================================================================
+// 📍 Empty State
+// =============================================================================
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  text-align: center;
+  color: var(--text-secondary);
+
+  .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    margin: 0 0 8px 0;
+    color: var(--text-primary);
+  }
+
+  p {
+    margin: 0 0 24px 0;
+    font-size: 0.875rem;
+  }
+
+  &.hidden {
+    display: none;
+  }
+}
+
+// =============================================================================
+// 🔄 Loading Indicator
+// =============================================================================
+
+.loading-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+
+  .loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border-color);
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  &.hidden {
+    display: none;
+  }
+}
+
+// =============================================================================
+// 🎬 Animations
+// =============================================================================
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Widget entrance animation
+.dashboard-widget {
+  animation: fadeIn 0.3s ease-out;
+}
+
+// =============================================================================
+// 📱 Responsive Design
+// =============================================================================
+
+@media (max-width: 1200px) {
+  .dashboard-header {
+    padding: 0 16px;
+    
+    .dashboard-title h1 {
+      font-size: 1.25rem;
+    }
+  }
+
+  .dashboard-content {
+    padding: 16px;
+  }
+
+  .widget-content {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --dashboard-header-height: 64px;
+  }
+
+  .dashboard-header {
+    .dashboard-subtitle {
+      display: none;
+    }
+  }
+
+  .dashboard-toolbar {
+    .toolbar-group {
+      gap: 4px;
+    }
+
+    .btn {
+      padding: 6px 8px;
+    }
+  }
+
+  .metric-widget .metric-primary .metric-value {
+    font-size: 1.5rem;
+  }
+
+  .chart-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-content {
+    padding: 12px;
+  }
+
+  .widget-header {
+    padding: 8px 12px;
+
+    .widget-title {
+      font-size: 0.8125rem;
+    }
+  }
+
+  .widget-content {
+    padding: 8px 12px;
+  }
+
+  .metric-widget .metric-primary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+
+    .metric-trend {
+      margin-left: 0;
+    }
+  }
+
+  .chart-stats {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+// =============================================================================
+// 🎯 Accessibility
+// =============================================================================
+
+// High contrast mode
+@media (prefers-contrast: high) {
+  .dashboard-widget {
+    border-width: 2px;
+  }
+
+  .widget-controls .widget-btn:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+}
+
+// Reduced motion
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-widget,
+  .widget-controls,
+  .chart-bar,
+  .spark-bar {
+    animation: none;
+    transition: none;
+  }
+
+  .loading-spinner {
+    animation: none;
+    border: 3px solid var(--primary-color);
+  }
+}
+
+// Focus indicators
+.dashboard-toolbar .btn:focus,
+.widget-controls .widget-btn:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+// Screen reader support
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// =============================================================================
+// 🎯 Component Registration (선택사항)
+// =============================================================================
+
+.recursive-component.dashboard {
+  /* 컴포넌트 등록을 위한 기본 클래스 */
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+} 
