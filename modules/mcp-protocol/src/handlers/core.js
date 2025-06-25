@@ -120,6 +120,76 @@ class MCPCoreHandlers {
                     },
                     required: ['session_id', 'new_information']
                 }
+            },
+            // 로그 시스템 MCP 도구들
+            {
+                name: 'show_recent_errors',
+                description: 'Show recent error logs in the UI and navigate to error dashboard',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        count: {
+                            type: 'number',
+                            description: 'Number of recent errors to show (default: 10)',
+                            minimum: 1,
+                            maximum: 100
+                        },
+                        timeRange: {
+                            type: 'string',
+                            description: 'Time range for errors (1h, 6h, 24h, 7d)',
+                            enum: ['1h', '6h', '24h', '7d']
+                        }
+                    }
+                }
+            },
+            {
+                name: 'open_log_search',
+                description: 'Open log search interface with optional pre-filled query',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        query: {
+                            type: 'string',
+                            description: 'Pre-filled search query'
+                        },
+                        filters: {
+                            type: 'object',
+                            description: 'Pre-applied filters'
+                        }
+                    }
+                }
+            },
+            {
+                name: 'jump_to_trace',
+                description: 'Navigate to logs with specific trace ID',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        traceId: {
+                            type: 'string',
+                            description: 'Trace ID to search for',
+                            minLength: 1
+                        }
+                    },
+                    required: ['traceId']
+                }
+            },
+            {
+                name: 'create_log_dashboard',
+                description: 'Create or navigate to log dashboard with specific configuration',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        widgets: {
+                            type: 'array',
+                            description: 'Widgets to include in dashboard',
+                            items: {
+                                type: 'string',
+                                enum: ['system-status', 'error-chart', 'recent-errors', 'log-stream']
+                            }
+                        }
+                    }
+                }
             }
         ];
 

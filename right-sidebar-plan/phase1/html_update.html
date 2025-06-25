@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recursive v2</title>
+    <link rel="stylesheet" href="src/styles/globals.scss">
+</head>
+<body>
+    <!-- 로딩 스크린 -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-spinner"></div>
+        <h2>Recursive v2</h2>
+        <p>시스템을 초기화하고 있습니다...</p>
+    </div>
+
+    <!-- 메인 앱 -->
+    <div id="app" class="app">
+        <!-- 헤더 -->
+        <header id="header" class="header">
+            <div class="header-left">
+                <button class="sidebar-toggle" aria-label="사이드바 토글">☰</button>
+                <div class="logo">
+                    <div class="logo-icon">R</div>
+                    <span class="logo-text">Recursive</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="connection-status">
+                    <span class="status-dot"></span>
+                    <span>연결 중...</span>
+                </div>
+                <button class="theme-toggle" aria-label="테마 전환">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- 앱 바디 -->
+        <div class="app-body">
+            <!-- 사이드바 -->
+            <aside id="sidebar" class="sidebar">
+                <!-- 네비게이션 메뉴는 Sidebar.js에서 동적 생성 -->
+            </aside>
+
+            <!-- 메인 콘텐츠 -->
+            <main id="mainContent" class="main-content">
+                <!-- 페이지 콘텐츠는 MainContent.js에서 동적 생성 -->
+            </main>
+
+            <!-- RightSidebar 추가 -->
+            <div id="rightSidebar" class="rightsidebar" data-visible="false"></div>
+        </div>
+
+        <!-- 푸터 -->
+        <footer id="footer" class="footer">
+            <div class="footer-content">
+                <span>Recursive v2</span>
+                <button class="settings-button">⚙️</button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 메인 앱 스크립트 -->
+    <script type="module" src="src/app.js"></script>
+</body>
+</html>

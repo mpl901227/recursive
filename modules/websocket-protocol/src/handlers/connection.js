@@ -32,13 +32,14 @@ class ConnectionHandler extends EventEmitter {
     const clientIp = this.getClientIp(request);
     
     // IP 밴 체크 (개발 중에는 비활성화)
-    if (this.config.rateLimiting.enabled && this.bannedConnections.has(clientIp)) {
+    if (this.config.rateLimiting?.enabled && this.bannedConnections.has(clientIp)) {
       ws.close(1008, 'IP banned');
       return null;
     }
 
-    // 최대 연결 수 체크
-    if (this.connections.size >= this.config.maxConnections) {
+    // 최대 연결 수 체크 (기본값 설정)
+    const maxConnections = this.config.maxConnections || 1000;
+    if (this.connections.size >= maxConnections) {
       ws.close(1013, 'Server overloaded');
       return null;
     }

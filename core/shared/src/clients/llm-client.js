@@ -16,6 +16,17 @@ class LLMClient {
         // 기본 설정
         this.defaultTimeout = 30000; // 30초
         this.maxRetries = 3;
+        
+        // 초기화 상태 확인
+        this.isAvailable = this.claudeApiKey || this.openaiApiKey;
+        
+        if (!this.isAvailable) {
+            console.warn('⚠️ LLM Client: No API keys found. Set ANTHROPIC_API_KEY or OPENAI_API_KEY environment variables.');
+        } else {
+            console.log('✅ LLM Client: Initialized successfully');
+            console.log(`   - Claude API: ${this.claudeApiKey ? '✅' : '❌'}`);
+            console.log(`   - OpenAI API: ${this.openaiApiKey ? '✅' : '❌'}`);
+        }
     }
 
     /**

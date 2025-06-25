@@ -1,0 +1,186 @@
+// ============================================
+// RightSidebar V2 - 스타일 구현
+// components.scss에 추가할 내용
+// ============================================
+
+.rightsidebar {
+  position: fixed;
+  top: var(--header-height, 60px);
+  right: 0;
+  bottom: 0;
+  background: var(--color-background);
+  border-left: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  
+  &[data-visible="true"] {
+    transform: translateX(0);
+  }
+  
+  &__resize-handle {
+    position: absolute;
+    top: 0;
+    left: -4px;
+    bottom: 0;
+    width: 8px;
+    cursor: ew-resize;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:hover,
+    &:focus {
+      background: var(--color-primary);
+      outline: none;
+    }
+  }
+  
+  &__resize-grip {
+    width: 2px;
+    height: 20px;
+    background: var(--color-border);
+    border-radius: 1px;
+    position: relative;
+    
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      width: 2px;
+      height: 20px;
+      background: var(--color-border);
+      border-radius: 1px;
+    }
+    
+    &::before { left: -3px; }
+    &::after { left: 3px; }
+  }
+  
+  &__header {
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  
+  &__content {
+    flex: 1;
+    overflow: hidden;
+  }
+  
+  &__tabs {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+  
+  &__tab {
+    white-space: nowrap;
+  }
+
+  &__close {
+    font-size: 1.5rem;
+    line-height: 1;
+    
+    &:hover {
+      background: var(--color-border);
+    }
+  }
+
+  &__app {
+    height: 100%;
+    overflow-y: auto;
+  }
+}
+
+// 반응형
+@media (max-width: 768px) {
+  .rightsidebar {
+    width: 100% !important;
+    max-width: 400px;
+  }
+}
+
+// 추가 유틸리티 클래스
+.space-y-2 > * + * {
+  margin-top: 0.5rem;
+}
+
+.space-y-3 > * + * {
+  margin-top: 0.75rem;
+}
+
+.text-4xl {
+  font-size: 2.25rem;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.mt-3 {
+  margin-top: 0.75rem;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
+.overflow-y-auto {
+  overflow-y: auto;
+}
+
+.text-green-600 {
+  color: #16a34a;
+}
+
+.text-yellow-600 {
+  color: #ca8a04;
+}
+
+.text-red-600 {
+  color: #dc2626;
+}
+
+// 버튼 hover 상태 개선
+.hover\:bg-gray-50:hover {
+  background-color: #f9fafb;
+}
+
+// 다크 테마 지원
+[data-theme="dark"] {
+  .text-green-600 {
+    color: #22c55e;
+  }
+  
+  .text-yellow-600 {
+    color: #eab308;
+  }
+  
+  .text-red-600 {
+    color: #ef4444;
+  }
+  
+  .text-gray-600 {
+    color: #9ca3af;
+  }
+  
+  .hover\:bg-gray-50:hover {
+    background-color: #374151;
+  }
+}

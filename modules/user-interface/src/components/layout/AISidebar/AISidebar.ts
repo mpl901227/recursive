@@ -439,7 +439,7 @@ export class AISidebar extends BaseComponent<HTMLElement, AISidebarProps> {
    * 토글 기능
    */
   public toggle(): void {
-    console.log(`🔄 AISidebar: Toggle called - current collapsed state: ${this.internalState.isCollapsed}`);
+    this.logger.info(`🔄 AISidebar: Toggle called - current collapsed state: ${this.internalState.isCollapsed}`);
     
     if (this.internalState.isCollapsed) {
       console.log('🔄 AISidebar: Currently collapsed, expanding...');

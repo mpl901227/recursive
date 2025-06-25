@@ -31,6 +31,10 @@ aiohttp-cors>=0.7.0
 # asyncio  # Built-in with Python
 # dataclasses  # Built-in with Python 3.7+
 
+# UI Analysis Dependencies (Added for screenshot analysis)
+playwright>=1.40.0
+Pillow>=9.0.0  # Image processing
+
 # Security and validation
 cryptography>=3.4.0
 validators>=0.18.0

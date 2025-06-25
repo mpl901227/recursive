@@ -30,7 +30,7 @@ declare global {
 }
 
 // CSS 스타일 import - 통합된 스타일만 로드
-import '../src/styles/globals.scss';
+import '../styles/globals.scss';
 
 // TypeScript 애플리케이션 import
 import { Application } from '../../src/core/app.ts';

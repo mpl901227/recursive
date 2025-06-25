@@ -55,6 +55,20 @@ export interface ComponentProps {
   ariaLabel?: string;
   /** 접근성 역할 */
   role?: string;
+  /** 시간 범위 (로그 시스템용) */
+  timeRange?: string;
+  /** 페이지 크기 (로그 시스템용) */
+  pageSize?: number;
+  /** 고급 검색 활성화 (로그 시스템용) */
+  enableAdvancedSearch?: boolean;
+  /** 새로고침 간격 (로그 시스템용) */
+  refreshInterval?: number;
+  /** 실시간 모드 (로그 시스템용) */
+  realTimeMode?: boolean;
+  /** 필터 표시 (로그 시스템용) */
+  showFilters?: boolean;
+  /** 자동완성 활성화 (로그 시스템용) */
+  enableAutoComplete?: boolean;
 }
 
 /**
@@ -142,6 +156,8 @@ export interface Config {
   ui: UIConfig;
   /** 로깅 설정 */
   logging: LoggingConfig;
+  /** 로그 시스템 설정 */
+  logSystem?: import('./log-system').LogSystemConfig;
 }
 
 /**

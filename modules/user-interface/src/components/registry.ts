@@ -7,10 +7,16 @@
 import type { 
   ComponentConstructor,
   ComponentProps,
-  EventManager
+  EventManager,
+  Component
 } from '../types/index.js';
 import { BaseComponent, ComponentOptions } from './base/component.js';
-import { Component } from './base/component';
+
+// Feature Components
+import { LogViewer, createLogViewerComponent } from './features/LogViewer/LogViewer.js';
+import { LogSearch, createLogSearchComponent } from './features/LogSearch/LogSearch.js';
+import { LogDashboard, createLogDashboardComponent } from './features/LogDashboard/LogDashboard.js';
+import { LogAnalysis, createLogAnalysisComponent } from './features/LogAnalysis/LogAnalysis.js';
 
 /**
  * 컴포넌트 메타데이터
@@ -536,4 +542,73 @@ export function RegisterComponent(
     ComponentRegistry.register(name, constructor as any, metadata);
     return constructor;
   };
-} 
+}
+
+// =============================================================================
+// 🎯 Default Component Registration
+// =============================================================================
+
+/**
+ * 기본 컴포넌트들을 레지스트리에 자동 등록
+ */
+export function registerDefaultComponents(): void {
+  console.log('🔧 Registering default components...');
+
+  // Feature Components
+  ComponentRegistry.register('LogViewer', LogViewer as any, {
+    version: '1.0.0',
+    description: '로그 엔트리를 표시하고 관리하는 로그 뷰어 컴포넌트',
+    tags: ['feature', 'log-system', 'viewer'],
+    dependencies: ['LogSystemService']
+  });
+
+  ComponentRegistry.register('LogSearch', LogSearch as any, {
+    version: '1.0.0',
+    description: '로그 검색 및 필터링을 위한 검색 컴포넌트',
+    tags: ['feature', 'log-system', 'search'],
+    dependencies: ['LogSystemService']
+  });
+
+  ComponentRegistry.register('LogDashboard', LogDashboard as any, {
+    version: '1.0.0',
+    description: '로그 시스템 대시보드 컴포넌트',
+    tags: ['feature', 'log-system', 'dashboard'],
+    dependencies: ['LogSystemService']
+  });
+
+  ComponentRegistry.register('LogAnalysis', LogAnalysis as any, {
+    version: '1.0.0',
+    description: '로그 분석 컴포넌트 - 패턴 분석, 성능 분석, 트렌드 분석',
+    tags: ['feature', 'log-system', 'analysis'],
+    dependencies: ['LogSystemService']
+  });
+
+  console.log('✅ Default components registered successfully');
+}
+
+/**
+ * 컴포넌트 팩토리 함수들
+ */
+export const COMPONENT_FACTORIES = {
+  LogViewer: createLogViewerComponent,
+  LogSearch: createLogSearchComponent,
+  LogDashboard: createLogDashboardComponent,
+  LogAnalysis: createLogAnalysisComponent,
+} as const;
+
+/**
+ * 컴포넌트 생성 헬퍼 함수
+ */
+export function createComponent<K extends keyof typeof COMPONENT_FACTORIES>(
+  name: K,
+  element: HTMLElement | string,
+  props?: ComponentProps,
+  eventManager?: EventManager
+): ReturnType<typeof COMPONENT_FACTORIES[K]> {
+  const factory = COMPONENT_FACTORIES[name];
+  if (!factory) {
+    throw new Error(`Component factory for '${name}' not found`);
+  }
+  
+  return factory(element, props as any, eventManager!) as any;
+}

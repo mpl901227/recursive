@@ -323,7 +323,9 @@ export class MainContent extends BaseComponent<HTMLElement, MainContentProps> {
   }
 
   private async handleBeforeNavigate(event: CustomEvent): Promise<void> {
-    const { to: _to, from } = event.detail;
+    // event.detail.payload에서 to, from을 가져옴
+    const payload = event.detail?.payload || {};
+    const { to: _to, from } = payload;
     
     // 스크롤 위치 저장
     if (from && this.props.restoreScroll) {

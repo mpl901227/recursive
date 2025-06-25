@@ -1,0 +1,485 @@
+// ============================================
+// RightSidebar V2 Phase 2 - 강화된 스타일
+// components.scss에 추가할 내용
+// ============================================
+
+// 기존 스타일에 추가
+.rightsidebar {
+  // 기존 스타일들...
+  
+  // 새로운 스타일들
+  &__header {
+    .header-actions {
+      .btn {
+        min-width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+    
+    .app-count-badge {
+      font-size: 0.75rem;
+      min-width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .tab-navigation {
+      .tab-indicators {
+        border-top: 1px solid var(--color-border);
+        padding-top: 0.5rem;
+        
+        .active-app-info {
+          font-weight: 500;
+          color: var(--color-primary);
+        }
+        
+        .last-used-info {
+          opacity: 0.7;
+        }
+      }
+    }
+  }
+  
+  &__tabs {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .dynamic-tab {
+      position: relative;
+      
+      &::after {
+        content: '⚡';
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        font-size: 0.75rem;
+        background: var(--color-warning);
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+      }
+    }
+  }
+  
+  &__content {
+    .app-container {
+      position: relative;
+      
+      .empty-state {
+        .quick-actions {
+          margin-top: 1rem;
+        }
+      }
+      
+      .loading-state {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+      }
+      
+      .app-content {
+        height: 100%;
+        overflow: hidden;
+      }
+    }
+  }
+  
+  // 앱별 스타일
+  &__app {
+    &.enhanced-log-app {
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+        gap: 0.5rem;
+        
+        .stat-item {
+          text-align: center;
+          padding: 0.5rem;
+          border-radius: var(--radius-base);
+          
+          &.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--color-error);
+          }
+          
+          &.warn {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--color-warning);
+          }
+          
+          &.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--color-success);
+          }
+        }
+      }
+      
+      .log-entry {
+        &.log-level-error {
+          border-left: 3px solid var(--color-error);
+          background: rgba(239, 68, 68, 0.05);
+        }
+        
+        &.log-level-warn {
+          border-left: 3px solid var(--color-warning);
+          background: rgba(245, 158, 11, 0.05);
+        }
+        
+        &.log-level-info {
+          border-left: 3px solid var(--color-primary);
+          background: rgba(59, 130, 246, 0.05);
+        }
+        
+        &.log-level-debug {
+          border-left: 3px solid var(--color-secondary);
+          background: rgba(100, 116, 139, 0.05);
+        }
+        
+        .log-level-badge {
+          font-size: 0.75rem;
+          padding: 0.125rem 0.375rem;
+          border-radius: 0.25rem;
+          font-weight: 600;
+          
+          &.log-level-error {
+            background: var(--color-error);
+            color: white;
+          }
+          
+          &.log-level-warn {
+            background: var(--color-warning);
+            color: white;
+          }
+          
+          &.log-level-info {
+            background: var(--color-primary);
+            color: white;
+          }
+          
+          &.log-level-debug {
+            background: var(--color-secondary);
+            color: white;
+          }
+        }
+      }
+      
+      .streaming-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        
+        .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: var(--color-secondary);
+          
+          &.active {
+            background: var(--color-success);
+            animation: pulse 2s infinite;
+          }
+        }
+      }
+    }
+    
+    &.enhanced-mcp-app {
+      .connection-status {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        
+        .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: var(--color-secondary);
+          
+          &.connected {
+            background: var(--color-success);
+          }
+          
+          &.disconnected {
+            background: var(--color-error);
+          }
+        }
+      }
+      
+      .category-tabs {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        
+        &::-webkit-scrollbar {
+          display: none;
+        }
+      }
+      
+      .tools-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 0.75rem;
+        padding: 0.75rem;
+        
+        .tool-card {
+          transition: all 0.2s ease;
+          
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          }
+          
+          &.status-running {
+            border-color: var(--color-success);
+            background: rgba(16, 185, 129, 0.05);
+          }
+          
+          &.status-error {
+            border-color: var(--color-error);
+            background: rgba(239, 68, 68, 0.05);
+          }
+          
+          .tool-status {
+            .status-indicator {
+              font-size: 0.875rem;
+            }
+            
+            .status-text {
+              font-weight: 500;
+              
+              &.running {
+                color: var(--color-success);
+              }
+              
+              &.error {
+                color: var(--color-error);
+              }
+              
+              &.available {
+                color: var(--color-secondary);
+              }
+            }
+          }
+          
+          .tool-actions {
+            .run-tool {
+              &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// 앱 로딩 인디케이터
+.app-loading-indicator {
+  .loading-spinner {
+    font-size: 2rem;
+    
+    .animate-spin {
+      animation: spin 1s linear infinite;
+    }
+  }
+  
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--color-border);
+    border-radius: 4px;
+    overflow: hidden;
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
+      transition: width 0.3s ease;
+    }
+  }
+}
+
+// 애니메이션 강화
+@keyframes pulse {
+  0%, 100% { 
+    opacity: 1; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.7; 
+    transform: scale(1.1);
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+// 상태 표시 스타일
+.status-connected {
+  color: var(--color-success);
+}
+
+.status-disconnected {
+  color: var(--color-error);
+}
+
+.status-loading {
+  color: var(--color-warning);
+}
+
+// 반응형 개선
+@media (max-width: 768px) {
+  .rightsidebar {
+    &__header {
+      .tab-navigation {
+        .rightsidebar__tabs {
+          gap: 0.25rem;
+          
+          .rightsidebar__tab {
+            font-size: 0.875rem;
+            padding: 0.375rem 0.75rem;
+          }
+        }
+      }
+    }
+    
+    &__app {
+      &.enhanced-log-app {
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      
+      &.enhanced-mcp-app {
+        .tools-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    }
+  }
+}
+
+// 다크 테마 강화
+[data-theme="dark"] {
+  .rightsidebar {
+    &__app {
+      &.enhanced-log-app {
+        .log-entry {
+          &.log-level-error {
+            background: rgba(239, 68, 68, 0.1);
+          }
+          
+          &.log-level-warn {
+            background: rgba(245, 158, 11, 0.1);
+          }
+          
+          &.log-level-info {
+            background: rgba(59, 130, 246, 0.1);
+          }
+          
+          &.log-level-debug {
+            background: rgba(100, 116, 139, 0.1);
+          }
+        }
+      }
+      
+      &.enhanced-mcp-app {
+        .tool-card {
+          &.status-running {
+            background: rgba(16, 185, 129, 0.1);
+          }
+          
+          &.status-error {
+            background: rgba(239, 68, 68, 0.1);
+          }
+        }
+      }
+    }
+  }
+}
+
+// 스크롤바 스타일링
+.rightsidebar {
+  .scrollbar-hidden {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+}
+
+// 배지 스타일 강화
+.badge {
+  &--sm {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.375rem;
+  }
+  
+  &--primary {
+    background: var(--color-primary);
+    color: white;
+  }
+  
+  &--success {
+    background: var(--color-success);
+    color: white;
+  }
+  
+  &--warning {
+    background: var(--color-warning);
+    color: white;
+  }
+  
+  &--error {
+    background: var(--color-error);
+    color: white;
+  }
+}
+
+// 유틸리티 클래스 추가
+.grid {
+  display: grid;
+}
+
+.grid-cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-cols-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.hidden {
+  display: none;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.scrollbar-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

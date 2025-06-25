@@ -1,0 +1,298 @@
+// Phase 3 스타일
+@use '../../../../styles/variables' as *;
+
+// 리사이즈 시스템 스타일
+.enhanced-resize-handle {
+  position: absolute;
+  left: -6px;
+  top: 0;
+  width: 12px;
+  height: 100%;
+  cursor: ew-resize;
+  background: transparent;
+  transition: background-color 0.2s;
+  z-index: 10;
+
+  &:hover,
+  &.resizing,
+  &.focused {
+    background-color: var(--color-primary-alpha-10);
+  }
+
+  .resize-grip {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.2s;
+
+    .grip-line {
+      width: 2px;
+      height: 20px;
+      background-color: var(--color-primary);
+      border-radius: 1px;
+    }
+  }
+
+  &:hover .resize-grip,
+  &.resizing .resize-grip,
+  &.focused .resize-grip {
+    opacity: 1;
+  }
+
+  .resize-tooltip {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+
+    .tooltip-text {
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .tooltip-shortcuts {
+      margin-top: 4px;
+      color: var(--color-text-secondary);
+      font-size: 11px;
+    }
+  }
+
+  &:hover .resize-tooltip,
+  &.resizing .resize-tooltip,
+  &.focused .resize-tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+.resize-preview-line {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: var(--color-primary);
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.2s;
+
+  &.visible {
+    opacity: 1;
+  }
+}
+
+.snap-indicator {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: var(--color-primary-alpha-20);
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0;
+  transition: opacity 0.2s;
+
+  &.active {
+    background-color: var(--color-primary);
+  }
+
+  .snap-label {
+    position: absolute;
+    top: 50%;
+    left: 8px;
+    transform: translateY(-50%);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+  }
+}
+
+// 키보드 내비게이션 스타일
+.keyboard-focused {
+  outline: 2px solid var(--color-primary) !important;
+  outline-offset: 2px !important;
+}
+
+// 접근성 스타일
+.high-contrast {
+  --color-text: #000000;
+  --color-text-secondary: #333333;
+  --color-background: #ffffff;
+  --color-border: #000000;
+  --color-primary: #0000ff;
+  --color-primary-alpha-10: rgba(0, 0, 255, 0.1);
+  --color-primary-alpha-20: rgba(0, 0, 255, 0.2);
+  --color-surface: #ffffff;
+  --color-error: #ff0000;
+  --color-success: #008000;
+  --color-warning: #ffa500;
+}
+
+.large-text {
+  font-size: 120%;
+  line-height: 1.5;
+
+  button,
+  input,
+  select,
+  textarea {
+    font-size: inherit;
+  }
+}
+
+.reduced-motion {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+.keyboard-only {
+  * {
+    &:focus {
+      outline: 2px solid var(--color-primary) !important;
+      outline-offset: 2px !important;
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: none !important;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary) !important;
+      outline-offset: 2px !important;
+    }
+  }
+}
+
+// 가상 스크롤링 스타일
+.virtual-scroll-container {
+  position: relative;
+  overflow-y: auto;
+  height: 100%;
+
+  .virtual-scroll-item {
+    position: absolute;
+    left: 0;
+    right: 0;
+    will-change: transform;
+  }
+}
+
+// 접근성 패널 스타일
+.accessibility-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 24px;
+  width: 480px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  z-index: 9999;
+
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--color-text);
+  }
+
+  .features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .feature-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .feature-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    color: var(--color-text);
+  }
+
+  .feature-description {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin-left: 28px;
+  }
+
+  .panel-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+
+    &.save-button {
+      background-color: var(--color-primary);
+      color: white;
+
+      &:hover {
+        background-color: var(--color-primary-dark);
+      }
+    }
+
+    &.close-button {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      color: var(--color-text);
+
+      &:hover {
+        background-color: var(--color-background);
+      }
+    }
+  }
+}
+
+// 스크린 리더 전용 클래스
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+} 

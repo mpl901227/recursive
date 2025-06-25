@@ -44,6 +44,19 @@ class MCPToolsHandlers {
                 case 'generate_timeline_diagram':
                     result = await this.handleGenerateTimelineDiagram(ws, args);
                     break;
+                // 로그 시스템 MCP 도구들
+                case 'show_recent_errors':
+                    result = await this.handleShowRecentErrors(ws, args);
+                    break;
+                case 'open_log_search':
+                    result = await this.handleOpenLogSearch(ws, args);
+                    break;
+                case 'jump_to_trace':
+                    result = await this.handleJumpToTrace(ws, args);
+                    break;
+                case 'create_log_dashboard':
+                    result = await this.handleCreateLogDashboard(ws, args);
+                    break;
                 default:
                     throw new Error(`Unknown tool: ${name}`);
             }
@@ -323,6 +336,191 @@ class MCPToolsHandlers {
         };
         
         return diagram;
+    }
+
+    // =============================================================================
+    // 🔧 로그 시스템 MCP 도구 핸들러들
+    // =============================================================================
+
+    /**
+     * 최근 에러 표시 핸들러
+     */
+    async handleShowRecentErrors(ws, args) {
+        const { count = 10, timeRange = '24h' } = args;
+        
+        console.log(`🔍 Showing recent errors: count=${count}, timeRange=${timeRange}`);
+        
+        try {
+            // Python 로그 서버에서 에러 로그 조회
+            const JSONRPCClient = require('../../../shared/src/utils/JSONRPCClient.js');
+            const client = new JSONRPCClient('http://localhost:8888/rpc');
+            
+            // 서버 사이드 에러 로그 조회
+            const serverErrors = await client.call('query', {
+                levels: ['ERROR', 'FATAL'],
+                since: timeRange,
+                limit: Math.ceil(count * 0.7)
+            });
+            
+            // 클라이언트 사이드 에러 로그 조회 (client- 소스 필터)
+            const clientErrors = await client.call('query', {
+                levels: ['ERROR', 'WARN'],
+                sources: ['client-ClientError', 'client-LogStreamService', 'client-LogDashboard'],
+                since: timeRange,
+                limit: Math.ceil(count * 0.3)
+            });
+            
+            // 결과 통합
+            const allErrors = [...(serverErrors.logs || []), ...(clientErrors.logs || [])]
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                .slice(0, count);
+
+            // UI 이벤트도 발송
+            this.server.wsServer.clients.forEach(client => {
+                if (client.readyState === 1) {
+                    client.send(JSON.stringify({
+                        type: 'mcp_ui_action',
+                        action: 'show_recent_errors',
+                        data: { count, timeRange, errors: allErrors }
+                    }));
+                }
+            });
+
+            return {
+                success: true,
+                total_errors: allErrors.length,
+                server_errors: serverErrors.logs?.length || 0,
+                client_errors: clientErrors.logs?.length || 0,
+                time_range: timeRange,
+                errors: allErrors.map(log => ({
+                    timestamp: log.timestamp,
+                    level: log.level,
+                    source: log.source,
+                    message: log.message,
+                    type: log.source.startsWith('client-') ? '🌐 Client' : '🖥️ Server',
+                    metadata: log.metadata
+                }))
+            };
+
+        } catch (error) {
+            console.error('Error showing recent errors:', error);
+            return {
+                success: false,
+                error: `Failed to show recent errors: ${error.message}`,
+                parameters: { count, timeRange }
+            };
+        }
+    }
+
+    /**
+     * 로그 검색 열기 핸들러
+     */
+    async handleOpenLogSearch(ws, args) {
+        const { query = '', filters = {} } = args;
+        
+        console.log(`🔍 Opening log search: query="${query}"`);
+        
+        try {
+            // UI 이벤트 발송
+            this.server.wsServer.clients.forEach(client => {
+                if (client.readyState === 1) {
+                    client.send(JSON.stringify({
+                        type: 'mcp_ui_action',
+                        action: 'open_log_search',
+                        data: { query, filters }
+                    }));
+                }
+            });
+
+            return {
+                success: true,
+                message: 'Log search opened successfully',
+                action: 'navigated_to_search',
+                parameters: { query, filters }
+            };
+
+        } catch (error) {
+            console.error('Error opening log search:', error);
+            return {
+                success: false,
+                error: `Failed to open log search: ${error.message}`,
+                parameters: { query, filters }
+            };
+        }
+    }
+
+    /**
+     * 트레이스 ID로 이동 핸들러
+     */
+    async handleJumpToTrace(ws, args) {
+        const { traceId } = args;
+        
+        console.log(`🔍 Jumping to trace: ${traceId}`);
+        
+        try {
+            // UI 이벤트 발송
+            this.server.wsServer.clients.forEach(client => {
+                if (client.readyState === 1) {
+                    client.send(JSON.stringify({
+                        type: 'mcp_ui_action',
+                        action: 'jump_to_trace',
+                        data: { traceId }
+                    }));
+                }
+            });
+
+            return {
+                success: true,
+                message: `Jumped to trace ${traceId}`,
+                action: 'navigated_to_viewer',
+                parameters: { traceId }
+            };
+
+        } catch (error) {
+            console.error('Error jumping to trace:', error);
+            return {
+                success: false,
+                error: `Failed to jump to trace: ${error.message}`,
+                parameters: { traceId }
+            };
+        }
+    }
+
+    /**
+     * 로그 대시보드 생성 핸들러
+     */
+    async handleCreateLogDashboard(ws, args) {
+        const { widgets = ['system-status', 'error-chart', 'recent-errors'] } = args;
+        
+        console.log(`🔍 Creating log dashboard with widgets:`, widgets);
+        
+        try {
+            // UI 이벤트 발송
+            this.server.wsServer.clients.forEach(client => {
+                if (client.readyState === 1) {
+                    client.send(JSON.stringify({
+                        type: 'mcp_ui_action',
+                        action: 'create_log_dashboard',
+                        data: { widgets }
+                    }));
+                }
+            });
+
+            return {
+                success: true,
+                message: 'Log dashboard configured successfully',
+                action: 'navigated_to_dashboard',
+                parameters: { widgets }
+            };
+
+        } catch (error) {
+            console.error('Error creating log dashboard:', error);
+            return {
+                success: false,
+                error: `Failed to create log dashboard: ${error.message}`,
+                parameters: { widgets }
+            };
+        }
     }
 }
 

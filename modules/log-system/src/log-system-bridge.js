@@ -329,20 +329,47 @@ class LogSystemBridge extends EventEmitter {
    * 자동 재시작 스케줄링
    */
   scheduleRestart() {
+    // 이미 재시작 중이거나 정지 중이면 무시
+    if (this.isReconnecting || this.isStopping) {
+      this._log('info', 'Restart already in progress or stopping, skipping...');
+      return;
+    }
+    
     this.restartAttempts++;
     this.stats.restartCount++;
     
-    const delay = this.config.restartDelay * Math.pow(2, this.restartAttempts - 1); // 지수 백오프
+    // 최대 재시도 횟수 확인
+    if (this.restartAttempts > this.config.maxRestartAttempts) {
+      this._log('error', 'Max restart attempts reached. Stopping auto-restart.');
+      this.emit('fatal', new Error('Max restart attempts exceeded'));
+      return;
+    }
+    
+    const delay = Math.min(this.config.restartDelay * Math.pow(2, this.restartAttempts - 1), 30000); // 최대 30초
     
     this._log('info', `Scheduling restart attempt ${this.restartAttempts}/${this.config.maxRestartAttempts} in ${delay}ms`);
     
     setTimeout(async () => {
+      // 재시작 전 상태 재확인
+      if (this.isReconnecting || this.isStopping || this.isReady) {
+        this._log('info', 'State changed, skipping scheduled restart');
+        return;
+      }
+      
       try {
-        this._log('info', `Restart attempt ${this.restartAttempts} starting...`);
+        this._log('info', `Restart attempt ${this.restartAttempts - 1} starting...`);
+        this.isReconnecting = true;
         await this.restart();
         this.restartAttempts = 0; // 성공 시 재시도 카운터 리셋
+        this.isReconnecting = false;
       } catch (error) {
-        this._log('error', `Restart attempt ${this.restartAttempts} failed: ${error.message}`);
+        this.isReconnecting = false;
+        this._log('error', `Restart attempt ${this.restartAttempts - 1} failed: ${error.message}`);
+        
+        // 재시도 간격이 너무 짧으면 추가 대기
+        if (this.restartAttempts < this.config.maxRestartAttempts) {
+          this.scheduleRestart();
+        }
       }
     }, delay);
   }

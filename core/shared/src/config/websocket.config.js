@@ -1,6 +1,6 @@
 module.exports = {
   server: {
-    port: process.env.WS_PORT || 3000,
+    port: process.env.WS_PORT || 3001,
     host: process.env.WS_HOST || 'localhost',
     maxConnections: process.env.WS_MAX_CONNECTIONS || 1000,
     gracefulShutdownTimeout: process.env.WS_SHUTDOWN_TIMEOUT || 30000

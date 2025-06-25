@@ -242,7 +242,7 @@ export class Header extends BaseComponent<HTMLElement, HeaderProps> {
 
   private handleLeftToggle(event: Event): void {
     event.preventDefault();
-    console.log('🔘 Left toggle button clicked - emitting sidebar:toggle event');
+    this.logger.info('🔘 Left toggle button clicked - emitting sidebar:toggle event');
     this.eventManager.emit('sidebar:toggle', { source: 'header' });
     this.updateToggleButtonState('left');
   }

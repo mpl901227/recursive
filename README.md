@@ -76,12 +76,21 @@ npm run install:all
 
 ### **2. 개발 서버 시작**
 ```bash
-# 메인 서버 시작
+# 통합 서버 시작 (메인 서버 + Python 로그 서버)
 npm run dev
+
+# 또는 개별 실행
+npm run dev:server    # 메인 서버만
+npm run dev:logs      # Python 로그 서버만
 
 # 모든 모듈 개발 모드
 npm run dev:all
 ```
+
+> **💡 통합 서버 기능**: 메인 서버 실행 시 Python 로그 서버가 자동으로 함께 시작됩니다.
+> - 🐍 **Python 로그 서버**: `http://localhost:8888`
+> - 📝 **로그 시스템 API**: `http://localhost:8888/rpc`
+> - 🔍 **헬스체크**: `http://localhost:8888/health`
 
 ### **3. 접속**
 - 🌐 **웹 대시보드**: http://localhost:3000

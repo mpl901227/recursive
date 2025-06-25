@@ -17,8 +17,10 @@ import os
 
 # 로컬 모듈 임포트
 try:
+    import sys
+    sys.path.append('../../python')
     from storage import LogStorage, create_storage
-    from config import Config, load_config_with_overrides
+    from main import Config, load_config_with_overrides
 except ImportError:
     print("로컬 모듈을 찾을 수 없습니다. 프로젝트 루트에서 실행하세요.")
 
@@ -45,6 +47,135 @@ class MCPLogAnalyzer:
             max_size_mb=self.config.storage.max_size_mb,
             max_days=self.config.storage.max_days
         )
+    
+    def get_recent_errors(self, minutes: int = 30) -> List[Dict]:
+        """최근 에러 로그 조회"""
+        try:
+            # 시간 계산
+            since_time = datetime.now() - timedelta(minutes=minutes)
+            
+            # 에러 로그 조회
+            return self.storage.query_logs(
+                levels=['ERROR', 'FATAL'],
+                since=since_time.isoformat(),
+                limit=100
+            )
+        except Exception as e:
+            return [{'error': str(e)}]
+    
+    def find_slow_queries(self, threshold_ms: int = 1000) -> List[Dict]:
+        """슬로우 쿼리 조회"""
+        try:
+            # 최근 1시간 동안의 로그 조회
+            since_time = datetime.now() - timedelta(hours=1)
+            
+            all_logs = self.storage.query_logs(
+                since=since_time.isoformat(),
+                limit=1000
+            )
+            
+            # 슬로우 쿼리 필터링
+            slow_queries = []
+            for log in all_logs:
+                duration = log.get('metadata', {}).get('duration_ms', 0)
+                if duration >= threshold_ms:
+                    slow_queries.append({
+                        'timestamp': log['timestamp'],
+                        'source': log['source'],
+                        'message': log['message'],
+                        'duration_ms': duration,
+                        'query': log.get('metadata', {}).get('query', log['message'])
+                    })
+            
+            return slow_queries
+        except Exception as e:
+            return [{'error': str(e)}]
+    
+    def trace_request(self, trace_id: str) -> Dict:
+        """트레이스 ID로 요청 추적"""
+        try:
+            # 트레이스 ID로 로그 조회
+            logs = self.storage.query_logs(
+                trace_id=trace_id,
+                limit=100
+            )
+            
+            if not logs:
+                return {'error': f'트레이스 ID {trace_id}에 대한 로그를 찾을 수 없습니다'}
+            
+            # 타임라인 정렬
+            sorted_logs = sorted(logs, key=lambda x: x['timestamp'])
+            
+            return {
+                'trace_id': trace_id,
+                'log_count': len(logs),
+                'start_time': sorted_logs[0]['timestamp'],
+                'end_time': sorted_logs[-1]['timestamp'],
+                'logs': sorted_logs
+            }
+        except Exception as e:
+            return {'error': str(e)}
+    
+    def analyze_error_pattern(self, error_message: str, hours: int = 24) -> Dict:
+        """에러 패턴 분석"""
+        try:
+            since_time = datetime.now() - timedelta(hours=hours)
+            
+            # 유사한 에러 메시지 검색
+            error_logs = self.storage.query_logs(
+                levels=['ERROR', 'FATAL'],
+                since=since_time.isoformat(),
+                limit=500
+            )
+            
+            # 패턴 매칭
+            similar_errors = []
+            for log in error_logs:
+                if error_message.lower() in log['message'].lower():
+                    similar_errors.append(log)
+            
+            return {
+                'pattern': error_message,
+                'timerange_hours': hours,
+                'similar_errors_count': len(similar_errors),
+                'similar_errors': similar_errors[:20]  # 최대 20개
+            }
+        except Exception as e:
+            return {'error': str(e)}
+    
+    def debug_session(self, since: str = "5m") -> Dict:
+        """디버깅 세션 정보 수집"""
+        try:
+            # 시간 파싱
+            if since.endswith('m'):
+                minutes = int(since[:-1])
+                since_time = datetime.now() - timedelta(minutes=minutes)
+            elif since.endswith('h'):
+                hours = int(since[:-1])
+                since_time = datetime.now() - timedelta(hours=hours)
+            else:
+                since_time = datetime.now() - timedelta(minutes=5)
+            
+            # 모든 로그 조회
+            all_logs = self.storage.query_logs(
+                since=since_time.isoformat(),
+                limit=1000
+            )
+            
+            # 분류
+            errors = [log for log in all_logs if log['level'] in ['ERROR', 'FATAL']]
+            warnings = [log for log in all_logs if log['level'] == 'WARN']
+            
+            return {
+                'timerange': since,
+                'total_logs': len(all_logs),
+                'errors': len(errors),
+                'warnings': len(warnings),
+                'recent_errors': errors[:10],
+                'recent_warnings': warnings[:10]
+            }
+        except Exception as e:
+            return {'error': str(e)}
         
     def _generate_alerts(self, stats: Dict) -> List[Dict]:
         """통계 기반 알림 생성"""
@@ -143,6 +274,89 @@ class MCPLogAnalyzer:
 
 
 # MCP 도구 함수들 - LLM이 직접 호출할 수 있는 함수들
+def get_recent_logs(minutes: int = 30, limit: int = 50, levels: List[str] = None, sources: List[str] = None) -> Dict:
+    """
+    최근 로그 조회 (모든 레벨)
+    
+    Args:
+        minutes: 조회할 시간 범위 (분)
+        limit: 최대 조회할 로그 수
+        levels: 필터링할 로그 레벨 (예: ['INFO', 'WARN', 'ERROR'])
+        sources: 필터링할 소스 (예: ['mcp_calls', 'http_traffic'])
+        
+    Returns:
+        최근 로그 목록과 분석 정보
+    """
+    try:
+        analyzer = MCPLogAnalyzer()
+        
+        # 시간 계산
+        since_time = datetime.now() - timedelta(minutes=minutes)
+        
+        # 로그 조회
+        logs = analyzer.storage.query_logs(
+            levels=levels,
+            sources=sources,
+            since=since_time.isoformat(),
+            limit=limit
+        )
+        
+        if not logs:
+            return {
+                'success': True,
+                'logs': [],
+                'count': 0,
+                'analysis': {
+                    'message': f'최근 {minutes}분간 로그가 없습니다.',
+                    'timerange_minutes': minutes,
+                    'filters_applied': {
+                        'levels': levels,
+                        'sources': sources,
+                        'limit': limit
+                    }
+                }
+            }
+            
+        # 로그 분석
+        log_levels = Counter([log.get('level', 'UNKNOWN') for log in logs])
+        log_sources = Counter([log.get('source', 'unknown') for log in logs])
+        
+        analysis = {
+            'total_logs': len(logs),
+            'timerange_minutes': minutes,
+            'log_by_level': dict(log_levels.most_common()),
+            'log_by_source': dict(log_sources.most_common(5)),
+            'most_recent': logs[0] if logs else None,
+            'activity_summary': {
+                'errors': log_levels.get('ERROR', 0) + log_levels.get('FATAL', 0),
+                'warnings': log_levels.get('WARN', 0),
+                'info_messages': log_levels.get('INFO', 0),
+                'debug_messages': log_levels.get('DEBUG', 0),
+                'error_rate': (log_levels.get('ERROR', 0) + log_levels.get('FATAL', 0)) / len(logs) if logs else 0
+            },
+            'filters_applied': {
+                'levels': levels,
+                'sources': sources,
+                'limit': limit
+            }
+        }
+        
+        return {
+            'success': True,
+            'logs': logs,
+            'count': len(logs),
+            'analysis': analysis
+        }
+        
+    except Exception as e:
+        return {
+            'success': False,
+            'error': str(e),
+            'count': 0,
+            'logs': []
+        }
+
+
 def get_recent_errors(minutes: int = 30) -> Dict:
     """
     최근 에러 로그 조회
@@ -1032,7 +1246,7 @@ def main():
     elif args.tool:
         if not args.params:
             print("--params 옵션으로 파라미터를 JSON 형식으로 제공하세요.")
-            print(f"예: --params '{\"minutes\": 30}'")
+            print('예: --params \'{"minutes": 30}\'')
             return
             
         try:

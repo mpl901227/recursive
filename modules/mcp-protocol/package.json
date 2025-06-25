@@ -19,14 +19,16 @@
     "build": "echo 'No build step required for Node.js module'"
   },
   "dependencies": {
-    "@recursive/shared": "^1.0.0",
+    "@modelcontextprotocol/sdk": "^1.13.0",
     "@recursive/ai-analysis": "^1.0.0",
+    "@recursive/shared": "^1.0.0",
+    "axios": "^1.6.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "eslint": "^8.56.0",
     "jest": "^29.7.0",
-    "nodemon": "^3.0.2",
-    "eslint": "^8.56.0"
+    "nodemon": "^3.0.2"
   },
   "keywords": [
     "mcp",
@@ -46,4 +48,4 @@
     "url": "git+https://github.com/recursive-team/recursive.git",
     "directory": "modules/mcp-protocol"
   }
-} 
+}

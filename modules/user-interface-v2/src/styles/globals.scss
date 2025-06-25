@@ -1,0 +1,377 @@
+@use './variables' as *;
+@use './design-system' as *;
+@use './components' as *;
+
+// ========================================
+// Recursive v2 - 단순화된 글로벌 스타일
+// ========================================
+
+// 기본 리셋
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  font-size: 16px;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  background-color: var(--color-background);
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+// ========================================
+// 레이아웃 스타일 (단순화)
+// ========================================
+
+.header {
+  height: var(--header-height);
+  background: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-base);
+  position: relative;
+  z-index: var(--z-header);
+  
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-base);
+  }
+  
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing-base) / 2);
+  }
+  
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing-base) / 2);
+    font-weight: 600;
+    
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--color-primary);
+      color: white;
+      border-radius: var(--radius-base);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+  }
+  
+  .sidebar-toggle {
+    background: none;
+    border: none;
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+    padding: calc(var(--spacing-base) / 2);
+    border-radius: var(--radius-base);
+    transition: var(--transition);
+    color: var(--color-text);
+    
+    &:hover {
+      background: var(--color-border);
+    }
+  }
+  
+  .connection-status {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing-base) / 2);
+    font-size: var(--font-size-sm);
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-secondary);
+      
+      &.connected {
+        background: var(--color-success);
+      }
+      
+      &.error {
+        background: var(--color-error);
+      }
+    }
+  }
+  
+  .theme-toggle {
+    background: none;
+    border: none;
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+    padding: calc(var(--spacing-base) / 2);
+    border-radius: var(--radius-base);
+    transition: var(--transition);
+    
+    &:hover {
+      background: var(--color-border);
+    }
+  }
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--color-background);
+}
+
+.app-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  padding-bottom: var(--footer-height);
+}
+
+.sidebar {
+  width: 0;
+  min-width: 0;
+  background: var(--color-background);
+  border-right: 1px solid var(--color-border);
+  transition: var(--transition);
+  position: relative;
+  z-index: var(--z-sidebar);
+  overflow: hidden;
+  
+  &.open {
+    width: 220px !important;
+    min-width: 220px !important;
+    overflow-y: auto !important;
+  }
+  
+  .nav-menu {
+    padding: var(--spacing-base);
+    
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: calc(var(--spacing-base) / 2);
+      padding: var(--spacing-base);
+      color: var(--color-text);
+      text-decoration: none;
+      border-radius: var(--radius-base);
+      margin-bottom: calc(var(--spacing-base) / 2);
+      transition: var(--transition);
+      
+      &:hover {
+        background: var(--color-border);
+      }
+      
+      &.active {
+        background: var(--color-primary);
+        color: white;
+      }
+      
+      .nav-icon {
+        font-size: var(--font-size-lg);
+      }
+    }
+  }
+}
+
+.main-content {
+  flex: 1;
+  padding: var(--spacing-base);
+  overflow-y: auto;
+  min-height: calc(100vh - var(--header-height) - var(--footer-height));
+  background-color: var(--color-background);
+  color: var(--color-text);
+  transition: var(--transition);
+  width: 100%;
+  position: relative;
+}
+
+// ========================================
+// 공통 컴포넌트 스타일
+// ========================================
+
+.btn {
+  padding: calc(var(--spacing-base) / 2) var(--spacing-base);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-base);
+  background: var(--color-background);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  transition: var(--transition);
+  
+  &:hover {
+    background: var(--color-border);
+  }
+  
+  &.btn-primary {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+    
+    &:hover {
+      background: var(--color-primary-dark);
+    }
+  }
+  
+  &.btn-success {
+    background: var(--color-success);
+    color: white;
+    border-color: var(--color-success);
+  }
+  
+  &.btn-warning {
+    background: var(--color-warning);
+    color: white;
+    border-color: var(--color-warning);
+  }
+  
+  &.btn-error {
+    background: var(--color-error);
+    color: white;
+    border-color: var(--color-error);
+  }
+}
+
+.input {
+  padding: calc(var(--spacing-base) / 2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-base);
+  background: var(--color-background);
+  color: var(--color-text);
+  font-size: var(--font-size-base);
+  transition: var(--transition);
+  
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+  }
+}
+
+.card {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-base);
+  padding: var(--spacing-base);
+  box-shadow: 0 2px 4px var(--color-shadow);
+}
+
+// ========================================
+// 유틸리티 클래스
+// ========================================
+
+.hidden { display: none !important; }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.gap { gap: var(--spacing-base); }
+.gap-sm { gap: calc(var(--spacing-base) / 2); }
+
+.p { padding: var(--spacing-base); }
+.p-sm { padding: calc(var(--spacing-base) / 2); }
+.m { margin: var(--spacing-base); }
+.m-sm { margin: calc(var(--spacing-base) / 2); }
+
+.text-center { text-align: center; }
+.text-sm { font-size: var(--font-size-sm); }
+.text-lg { font-size: var(--font-size-lg); }
+.font-bold { font-weight: 600; }
+
+// ========================================
+// 반응형 (모바일용 심플한 미디어 쿼리)
+// ========================================
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    height: calc(100vh - var(--header-height));
+    z-index: var(--z-modal);
+    width: 0;
+    
+    &.open {
+      width: 280px;
+      min-width: 280px;
+    }
+  }
+  
+  .header .logo-text {
+    display: none;
+  }
+}
+
+// 에러 화면 스타일
+.error-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  flex-direction: column;
+  text-align: center;
+  padding: 2rem;
+
+  h1 {
+    color: var(--error-color);
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+  }
+
+  pre {
+    background-color: var(--code-background);
+    padding: 1rem;
+    border-radius: 8px;
+    overflow: auto;
+    max-width: 600px;
+    color: var(--warning-color);
+  }
+
+  button {
+    margin-top: 2rem;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: var(--primary-hover);
+    }
+  }
+}
+
+// 앱 페이드 인/아웃 트랜지션
+#app {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+
+  &.ready {
+    opacity: 1;
+  }
+}
+
+#loadingScreen {
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+} 

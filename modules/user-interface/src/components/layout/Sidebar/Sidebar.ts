@@ -135,6 +135,43 @@ export class Sidebar extends BaseComponent<HTMLElement, SidebarProps> {
             url: '/dashboard'
           },
           {
+            id: 'logs',
+            title: '로그 시스템',
+            icon: '📋',
+            children: [
+              {
+                id: 'log-dashboard',
+                title: '로그 대시보드',
+                icon: '📊',
+                url: '/logs/dashboard'
+              },
+              {
+                id: 'log-viewer',
+                title: '로그 뷰어',
+                icon: '👁️',
+                url: '/logs/viewer'
+              },
+              {
+                id: 'log-search',
+                title: '로그 검색',
+                icon: '🔍',
+                url: '/logs/search'
+              },
+              {
+                id: 'log-analysis',
+                title: '로그 분석',
+                icon: '📈',
+                url: '/logs/analysis'
+              },
+              {
+                id: 'log-settings',
+                title: '로그 설정',
+                icon: '⚙️',
+                url: '/logs/settings'
+              }
+            ]
+          },
+          {
             id: 'chat',
             title: '채팅',
             icon: '💬',
@@ -289,7 +326,7 @@ export class Sidebar extends BaseComponent<HTMLElement, SidebarProps> {
   public toggle(options: { force?: boolean; animated?: boolean } = {}): void {
     const { force, animated = true } = options;
     
-    console.log(`🔄 Sidebar: Toggle called - current state: ${this.currentState}, force: ${force}, animated: ${animated}`);
+    this.logger.info(`🔄 Sidebar: Toggle called - current state: ${this.currentState}, force: ${force}, animated: ${animated}`);
     
     if (force !== undefined) {
       if (force) {

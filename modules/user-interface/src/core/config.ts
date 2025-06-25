@@ -12,7 +12,9 @@ import type {
   LoggingConfig,
   Environment,
   DeepPartial
-} from '@/types';
+} from '../types/index';
+
+import type { LogSystemConfig } from '../types/log-system';
 
 // -----------------------------------------------------------------------------
 // 🏗️ Default Configuration Values
@@ -153,6 +155,31 @@ const DEFAULT_LOGGING_CONFIG: LoggingConfig = {
 };
 
 /**
+ * 기본 로그 시스템 설정
+ */
+const DEFAULT_LOG_SYSTEM_CONFIG: LogSystemConfig = {
+  enabled: true,
+  autoStart: true,
+  retryCount: 3,
+  timeout: 10000,
+  bridgeEndpoint: 'http://localhost:8888',
+  autoConnect: true,
+  retryAttempts: 5,
+  bufferSize: 1000,
+  realTimeEnabled: true,
+  websocket: {
+    url: 'ws://localhost:8888/ws',
+    reconnectInterval: 5000,
+    maxReconnectAttempts: 10
+  },
+  cache: {
+    enabled: true,
+    ttl: 300000,
+    maxSize: 1000
+  }
+};
+
+/**
  * 기본 전체 설정
  */
 const DEFAULT_CONFIG: Config = {
@@ -161,7 +188,8 @@ const DEFAULT_CONFIG: Config = {
   mcp: DEFAULT_MCP_CONFIG,
   api: DEFAULT_API_CONFIG,
   ui: DEFAULT_UI_CONFIG,
-  logging: DEFAULT_LOGGING_CONFIG
+  logging: DEFAULT_LOGGING_CONFIG,
+  logSystem: DEFAULT_LOG_SYSTEM_CONFIG
 };
 
 // -----------------------------------------------------------------------------
@@ -241,6 +269,13 @@ export class ConfigManager {
    */
   getLoggingConfig(): LoggingConfig {
     return this.deepClone(this.config.logging);
+  }
+
+  /**
+   * 로그 시스템 설정 반환
+   */
+  getLogSystemConfig(): LogSystemConfig | undefined {
+    return this.config.logSystem ? this.deepClone(this.config.logSystem) : undefined;
   }
 
   /**

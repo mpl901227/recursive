@@ -18,6 +18,8 @@ import { ConfigManager } from './config.js';
 import { EventManager } from './events.js';
 import { LifecycleManager } from './lifecycle.js';
 import { clearGlobalComponentRegistry } from '../components/base/component.js';
+import { registerDefaultComponents } from '../components/registry.js';
+import { LoggerManager, LogLevel } from '../utils/logger';
 
 // -----------------------------------------------------------------------------
 // 🏗️ Service Registry Implementation
@@ -335,6 +337,9 @@ export class Application {
       // 서비스들 초기화
       await this.serviceRegistry.initializeAll();
       
+      // 원격 로깅 설정
+      this.setupRemoteLogging();
+      
       this.setState('initialized');
       this.eventManager.emit('app:initialized', { 
         type: 'app:initialized',
@@ -521,6 +526,9 @@ export class Application {
   private async performComponentInitialization(): Promise<void> {
     try {
       console.log('🔧 컴포넌트 등록 및 초기화 시작...');
+      
+      // 0. 기본 컴포넌트들 등록
+      registerDefaultComponents();
       
       // 1. 폴백 컨텐츠 렌더링 (즉시 UI 표시)
       this.renderFallbackContent();
@@ -944,37 +952,381 @@ export class Application {
   }
 
   private setupApplicationHooks(): void {
-    this.lifecycleManager.addHook('beforeInit', async () => {
-      this.eventManager.emit('app:before-init', { timestamp: Date.now() });
+    // 전역 에러 핸들러
+    window.addEventListener('error', (event) => {
+      this.handleError(new Error(`Global error: ${event.message}`));
+    });
+    
+    window.addEventListener('unhandledrejection', (event) => {
+      this.handleError(new Error(`Unhandled promise rejection: ${event.reason}`));
     });
 
-    this.lifecycleManager.addHook('init', async () => {
-      this.eventManager.emit('app:init', { timestamp: Date.now() });
-    });
+    // 앱 전역 접근
+    (window as any).app = this;
+    
+    // RecursiveApp 전역 객체 설정 (컴포넌트에서 접근 가능)
+    (window as any).RecursiveApp = {
+      serviceRegistry: this.serviceRegistry,
+      componentRegistry: this.componentRegistry,
+      eventManager: this.eventManager,
+      configManager: this.configManager,
+      app: this
+    };
 
-    this.lifecycleManager.addHook('afterInit', async () => {
-      this.eventManager.emit('app:after-init', { timestamp: Date.now() });
-    });
+    // 개발 모드에서 디버그 정보 노출
+    if (this.options.debug) {
+      (window as any).debugApp = () => ({
+        state: this.state,
+        services: Array.from(this.serviceRegistry.getAll().keys()),
+        components: this.componentRegistry.getRegisteredConstructors(),
+        config: this.configManager.getConfig()
+      });
+    }
 
-    this.lifecycleManager.addHook('beforeStart', async () => {
-      this.eventManager.emit('app:before-start', { timestamp: Date.now() });
-    });
+    // 로그 시스템 라우트 설정
+    this.setupLogSystemRoutes();
 
-    this.lifecycleManager.addHook('start', async () => {
-      this.eventManager.emit('app:start', { timestamp: Date.now() });
-    });
+    // Logger 원격 전송 설정
+    this.setupRemoteLogging();
+  }
 
-    this.lifecycleManager.addHook('afterStart', async () => {
-      this.eventManager.emit('app:after-start', { timestamp: Date.now() });
-    });
+  /**
+   * 로그 시스템 라우트 설정
+   */
+  private async setupLogSystemRoutes(): Promise<void> {
+    try {
+      const { Router } = await import('./router.js');
+      const router = new Router(this.eventManager, {
+        mode: 'hash',
+        base: '',
+        fallback: '/'
+      });
 
-    this.lifecycleManager.addHook('beforeStop', async () => {
-      this.eventManager.emit('app:before-stop', { timestamp: Date.now() });
-    });
+      // 로그 대시보드 라우트
+      router.addRoute({
+        path: '/logs/dashboard',
+        handler: async (context) => {
+          await this.loadLogComponent('LogDashboard', context);
+        },
+        name: 'log-dashboard'
+      });
 
-    this.lifecycleManager.addHook('afterStop', async () => {
-      this.eventManager.emit('app:after-stop', { timestamp: Date.now() });
-    });
+      // 로그 뷰어 라우트
+      router.addRoute({
+        path: '/logs/viewer',
+        handler: async (context) => {
+          await this.loadLogComponent('LogViewer', context);
+        },
+        name: 'log-viewer'
+      });
+
+      // 로그 검색 라우트
+      router.addRoute({
+        path: '/logs/search',
+        handler: async (context) => {
+          await this.loadLogComponent('LogSearch', context);
+        },
+        name: 'log-search'
+      });
+
+      // 로그 분석 라우트
+      router.addRoute({
+        path: '/logs/analysis',
+        handler: async (context) => {
+          await this.loadLogComponent('LogAnalysis', context);
+        },
+        name: 'log-analysis'
+      });
+
+      // 기본 대시보드 라우트
+      router.addRoute({
+        path: '/dashboard',
+        handler: async (context) => {
+          await this.loadDashboardComponent(context);
+        },
+        name: 'dashboard'
+      });
+
+      // 기본 라우트
+      router.addRoute({
+        path: '/',
+        handler: async () => {
+          await this.loadDefaultContent();
+        },
+        name: 'home'
+      });
+
+      await router.start();
+      console.info('✅ Router initialized with log system routes');
+    } catch (error) {
+      console.error('❌ Failed to setup log system routes:', error);
+    }
+  }
+
+  /**
+   * 로그 컴포넌트 로드
+   */
+  private async loadLogComponent(componentName: string, context: any): Promise<void> {
+    try {
+      const mainContent = document.getElementById('mainContent');
+      if (!mainContent) {
+        console.error('Main content container not found');
+        return;
+      }
+
+      // 로딩 상태 표시
+      mainContent.innerHTML = `
+        <div class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>로딩 중...</p>
+        </div>
+      `;
+
+      // 로그 시스템 서비스 확인
+      const logService = this.serviceRegistry.get('log-system');
+      if (!logService) {
+        throw new Error('LogSystem service not found');
+      }
+
+      // 컴포넌트 생성
+      const { createComponent } = await import('../components/registry.js');
+      
+      let title = '';
+      let description = '';
+
+      // mainContent를 초기화 (로딩 상태 제거)
+      mainContent.innerHTML = '';
+
+      switch (componentName) {
+        case 'LogDashboard':
+          title = '로그 대시보드';
+          description = '시스템 로그 현황을 한눈에 확인하세요';
+          const dashboardComponent = createComponent('LogDashboard', mainContent, {
+            timeRange: '1h',
+            refreshInterval: 30000
+          }, this.eventManager);
+          
+          // 강제 초기화 및 렌더링
+          if (dashboardComponent && typeof dashboardComponent.initialize === 'function') {
+            await dashboardComponent.initialize();
+            if (typeof dashboardComponent.render === 'function') {
+              dashboardComponent.render();
+            }
+            console.info(`🎨 LogDashboard component rendered`);
+          }
+          break;
+
+        case 'LogViewer':
+          title = '로그 뷰어';
+          description = '실시간 로그를 확인하고 필터링하세요';
+          const viewerComponent = createComponent('LogViewer', mainContent, {
+            pageSize: 50,
+            realTimeMode: true,
+            showFilters: true
+          }, this.eventManager);
+          
+          // 강제 초기화 및 렌더링
+          if (viewerComponent && typeof viewerComponent.initialize === 'function') {
+            await viewerComponent.initialize();
+            if (typeof viewerComponent.render === 'function') {
+              viewerComponent.render();
+            }
+            console.info(`🎨 LogViewer component rendered`);
+          }
+          break;
+
+        case 'LogSearch':
+          title = '로그 검색';
+          description = '고급 검색 기능으로 원하는 로그를 찾아보세요';
+          const searchComponent = createComponent('LogSearch', mainContent, {
+            enableAdvancedSearch: true,
+            enableAutoComplete: true
+          }, this.eventManager);
+          
+          // 강제 초기화 및 렌더링
+          if (searchComponent && typeof searchComponent.initialize === 'function') {
+            await searchComponent.initialize();
+            if (typeof searchComponent.render === 'function') {
+              searchComponent.render();
+            }
+            console.info(`🎨 LogSearch component rendered`);
+          }
+          break;
+
+        case 'LogAnalysis':
+          title = '로그 분석';
+          description = '로그 패턴, 성능, 트렌드를 분석하세요';
+          const analysisComponent = createComponent('LogAnalysis', mainContent, {
+            timeRange: '24h'
+          }, this.eventManager);
+          
+          // 강제 초기화 및 렌더링
+          if (analysisComponent && typeof analysisComponent.initialize === 'function') {
+            await analysisComponent.initialize();
+            if (typeof analysisComponent.render === 'function') {
+              analysisComponent.render();
+            }
+            console.info(`🎨 LogAnalysis component rendered`);
+          }
+          break;
+
+        default:
+          throw new Error(`Unknown log component: ${componentName}`);
+      }
+
+      // 페이지 제목 업데이트
+      this.updatePageTitle(title, description);
+
+      // 네비게이션 이벤트 발생
+      this.eventManager.emit('navigation:changed', {
+        path: context.path,
+        component: componentName,
+        title
+      });
+
+      console.info(`✅ ${componentName} loaded successfully`);
+    } catch (error) {
+      console.error(`❌ Failed to load ${componentName}:`, error);
+      await this.loadErrorContent(error as Error);
+    }
+  }
+
+  /**
+   * 대시보드 컴포넌트 로드
+   */
+  private async loadDashboardComponent(_context: any): Promise<void> {
+    try {
+      const mainContent = document.getElementById('mainContent');
+      if (!mainContent) return;
+
+      mainContent.innerHTML = `
+        <div class="dashboard-container">
+          <div class="dashboard-header">
+            <h1>시스템 대시보드</h1>
+            <p>Recursive 시스템 현황을 확인하세요</p>
+          </div>
+          
+          <div class="dashboard-grid">
+            <div class="dashboard-card">
+              <h3>로그 시스템</h3>
+              <p>최근 로그 활동을 확인하세요</p>
+              <a href="#/logs/dashboard" class="btn btn-primary">로그 대시보드 열기</a>
+            </div>
+            
+            <div class="dashboard-card">
+              <h3>실시간 모니터링</h3>
+              <p>시스템 상태를 실시간으로 모니터링</p>
+              <a href="#/logs/viewer" class="btn btn-primary">로그 뷰어 열기</a>
+            </div>
+            
+            <div class="dashboard-card">
+              <h3>로그 검색</h3>
+              <p>고급 검색으로 특정 로그 찾기</p>
+              <a href="#/logs/search" class="btn btn-primary">로그 검색 열기</a>
+            </div>
+            
+            <div class="dashboard-card">
+              <h3>로그 분석</h3>
+              <p>로그 패턴, 성능, 트렌드를 심층 분석</p>
+              <a href="#/logs/analysis" class="btn btn-primary">로그 분석 열기</a>
+            </div>
+          </div>
+        </div>
+      `;
+
+      this.updatePageTitle('대시보드', 'Recursive 시스템 현황');
+    } catch (error) {
+      console.error('❌ Failed to load dashboard:', error);
+    }
+  }
+
+  /**
+   * 기본 콘텐츠 로드
+   */
+  private async loadDefaultContent(): Promise<void> {
+    const mainContent = document.getElementById('mainContent');
+    if (!mainContent) return;
+
+    mainContent.innerHTML = `
+      <div class="welcome-container">
+        <div class="welcome-header">
+          <h1>🔄 Recursive에 오신 것을 환영합니다</h1>
+          <p>통합 로그 시스템과 AI 도구를 활용한 개발 환경</p>
+        </div>
+        
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>로그 대시보드</h3>
+            <p>시스템 로그를 시각적으로 분석하고 모니터링하세요</p>
+            <a href="#/logs/dashboard" class="btn btn-outline">시작하기</a>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-icon">👁️</div>
+            <h3>실시간 로그 뷰어</h3>
+            <p>실시간으로 발생하는 로그를 실시간으로 확인하세요</p>
+            <a href="#/logs/viewer" class="btn btn-outline">시작하기</a>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-icon">🔍</div>
+            <h3>로그 검색</h3>
+            <p>강력한 검색 기능으로 원하는 로그를 빠르게 찾아보세요</p>
+            <a href="#/logs/search" class="btn btn-outline">시작하기</a>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-icon">📈</div>
+            <h3>로그 분석</h3>
+            <p>AI 기반 로그 분석으로 패턴과 트렌드를 발견하세요</p>
+            <a href="#/logs/analysis" class="btn btn-outline">시작하기</a>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.updatePageTitle('환영합니다', 'Recursive 통합 개발 환경');
+  }
+
+  /**
+   * 에러 콘텐츠 로드
+   */
+  private async loadErrorContent(error: Error): Promise<void> {
+    const mainContent = document.getElementById('mainContent');
+    if (!mainContent) return;
+
+    mainContent.innerHTML = `
+      <div class="error-container">
+        <div class="error-content">
+          <div class="error-icon">⚠️</div>
+          <h2>오류가 발생했습니다</h2>
+          <p class="error-message">${error.message}</p>
+          <div class="error-actions">
+            <button onclick="window.location.reload()" class="btn btn-primary">페이지 새로고침</button>
+            <a href="#/" class="btn btn-outline">홈으로 돌아가기</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * 페이지 제목 업데이트
+   */
+  private updatePageTitle(title: string, description?: string): void {
+    document.title = `${title} - Recursive`;
+    
+    // 메타 description 업데이트
+    if (description) {
+      let metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement;
+      if (!metaDesc) {
+        metaDesc = document.createElement('meta');
+        metaDesc.name = 'description';
+        document.head.appendChild(metaDesc);
+      }
+      metaDesc.content = description;
+    }
   }
 
   private setupErrorHandling(): void {
@@ -1024,9 +1376,25 @@ export class Application {
 
   private async registerDefaultServices(): Promise<void> {
     try {
-      await this.registerAPIClient();
-      await this.registerWebSocketService();
+      // 핵심 서비스들을 병렬로 등록 (서로 독립적)
+      const serviceRegistrations = [
+        this.registerAPIClient(),
+        this.registerWebSocketService(),
+        this.registerLogSystemService()
+      ];
       
+      // 병렬 등록 실행 (실패한 서비스가 있어도 다른 서비스는 계속 등록)
+      const results = await Promise.allSettled(serviceRegistrations);
+      
+      // 실패한 서비스 로그 출력
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          const serviceName = ['API Client', 'WebSocket', 'LogSystem'][index];
+          console.warn(`⚠️ Failed to register ${serviceName} service:`, result.reason);
+        }
+      });
+      
+      // 기본 서비스들 등록
       const storageService = {
         name: 'storage',
         version: '1.0.0',
@@ -1050,8 +1418,9 @@ export class Application {
       this.serviceRegistry.register('analytics', analyticsService);
       
       console.info('✅ Default services registered');
-    } catch (error) {
-      console.error('❌ Failed to register default services:', error);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('❌ Failed to register default services:', errorMessage);
       throw error;
     }
   }
@@ -1135,6 +1504,60 @@ export class Application {
     }
   }
 
+  private async registerLogSystemService(): Promise<void> {
+    try {
+      const { 
+        createLogSystemServiceInstance, 
+        createEnvironmentLogSystemConfig 
+      } = await import('../services/log-system/index.js');
+      
+      // ConfigManager에서 로그 시스템 설정 가져오기
+      let logSystemConfig = this.configManager.getLogSystemConfig();
+      
+      // 설정이 없으면 환경별 기본 설정 생성
+      if (!logSystemConfig) {
+        // 강제로 development 환경 사용 (8888 포트)
+        const environment = 'development';
+        logSystemConfig = createEnvironmentLogSystemConfig(environment);
+        
+        // ConfigManager에 설정 저장
+        this.configManager.updateConfig({
+          logSystem: logSystemConfig
+        });
+      }
+      
+      // 설정이 비활성화된 경우 서비스 등록하지 않음
+      if (!logSystemConfig.enabled) {
+        console.info('⚠️ LogSystem service is disabled in configuration');
+        return;
+      }
+      
+      // LogSystemService 생성
+      const logSystemService = createLogSystemServiceInstance(logSystemConfig, this.eventManager);
+      
+      // 서비스 등록
+      this.serviceRegistry.register('log-system', logSystemService);
+      
+      // 자동 시작이 활성화된 경우에만 초기화 시도
+      if (logSystemConfig.autoStart) {
+        try {
+          await logSystemService.initialize();
+          console.info('✅ LogSystem service initialized and connected');
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          console.warn('⚠️ LogSystem service registered but failed to connect:', errorMessage);
+          // 연결 실패해도 서비스는 유지 (나중에 재연결 시도 가능)
+        }
+      }
+      
+      console.info('✅ LogSystem service registered');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('❌ Failed to register LogSystem service:', errorMessage);
+      // LogSystem 서비스 등록 실패는 앱 전체를 중단시키지 않음
+    }
+  }
+
   // Public API methods remain the same
   getConfigManager(): ConfigManager { return this.configManager; }
   getEventManager(): EventManager { return this.eventManager; }
@@ -1169,6 +1592,165 @@ export class Application {
 
   getUnhandledErrors(): Error[] { return [...this.unhandledErrors]; }
   clearUnhandledErrors(): void { this.unhandledErrors.length = 0; }
+
+  // Logger 원격 전송 설정 추가
+  private setupRemoteLogging(): void {
+    try {
+      // 클라이언트 로그를 서버로 전송하도록 설정
+      const loggerManager = LoggerManager.getInstance();
+      loggerManager.setDefaultOptions({
+        enableRemote: true,
+        remoteEndpoint: 'http://localhost:8888/api/client-logs',
+        level: LogLevel.INFO, // INFO 레벨 이상만 전송 (DEBUG 제외)
+        batchSize: 10,
+        batchInterval: 5000, // 배치 간격을 늘림
+        includeUrl: true,
+        includeUserAgent: true,
+        includeStack: false, // 스택 트레이스 비활성화로 성능 향상
+        enableConsole: false // 무한 루프 방지를 위해 콘솔 출력 비활성화
+      });
+
+      // 원본 console 메서드 저장
+      const originalConsole = {
+        log: console.log.bind(console),
+        info: console.info.bind(console),
+        warn: console.warn.bind(console),
+        error: console.error.bind(console),
+        debug: console.debug.bind(console)
+      };
+
+      // 로그 수집 제외할 패턴들
+      const excludePatterns = [
+        /🚀 Emitting event/,
+        /Emitting event:/,
+        /Event emitted:/,
+        /Logger/,
+        /BrowserConsole/,
+        /Remote logging/,
+        /LogSystem/,
+        /%c\[.*?\]/  // 색상 코드가 포함된 로그
+      ];
+
+      // 메시지가 제외 패턴에 해당하는지 확인
+      const shouldExcludeMessage = (message: string): boolean => {
+        return excludePatterns.some(pattern => pattern.test(message));
+      };
+
+      // 브라우저 콘솔 로그를 캐치하는 로거 (콘솔 출력 비활성화)
+      const consoleLogger = loggerManager.getLogger('BrowserConsole', {
+        enableConsole: false,
+        enableRemote: true
+      });
+
+      // console.error만 캐치 (가장 중요한 로그만)
+      console.error = (...args: any[]) => {
+        originalConsole.error(...args);
+        try {
+          const message = args.map(arg => 
+            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+          ).join(' ');
+          
+          if (!shouldExcludeMessage(message)) {
+            consoleLogger.error(message);
+          }
+        } catch (e) {
+          // 로그 전송 실패 시 무시
+        }
+      };
+
+      // console.warn만 캐치
+      console.warn = (...args: any[]) => {
+        originalConsole.warn(...args);
+        try {
+          const message = args.map(arg => 
+            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+          ).join(' ');
+          
+          if (!shouldExcludeMessage(message)) {
+            consoleLogger.warn(message);
+          }
+        } catch (e) {
+          // 로그 전송 실패 시 무시
+        }
+      };
+
+      // console.log, console.info, console.debug는 오버라이드하지 않음 (성능상 이유)
+
+      // 글로벌 에러 핸들러에서도 로그 전송
+      window.addEventListener('error', (event) => {
+        try {
+          const logger = loggerManager.getLogger('ClientError', { enableConsole: false });
+          logger.error('JavaScript Error', {
+            message: event.error?.message || event.message,
+            filename: event.filename,
+            lineno: event.lineno,
+            colno: event.colno,
+            stack: event.error?.stack,
+            url: window.location.href
+          });
+        } catch (e) {
+          // 에러 핸들링 실패 시 무시
+        }
+      });
+
+      // Promise rejection 에러도 캐치
+      window.addEventListener('unhandledrejection', (event) => {
+        try {
+          const logger = loggerManager.getLogger('ClientError', { enableConsole: false });
+          logger.error('Unhandled Promise Rejection', {
+            reason: event.reason,
+            url: window.location.href
+          });
+        } catch (e) {
+          // 에러 핸들링 실패 시 무시
+        }
+      });
+
+      // DOM 이벤트 리스너 중복 등록 감지를 위한 패치
+      const originalAddEventListener = EventTarget.prototype.addEventListener;
+      const eventListenerMap = new WeakMap<EventTarget, Map<string, Set<EventListener>>>();
+
+      EventTarget.prototype.addEventListener = function(type: string, listener: EventListener | EventListenerObject | null, options?: boolean | AddEventListenerOptions) {
+        if (listener) {
+          try {
+            // 이벤트 리스너 추적
+            if (!eventListenerMap.has(this)) {
+              eventListenerMap.set(this, new Map());
+            }
+            const elementMap = eventListenerMap.get(this)!;
+            
+            if (!elementMap.has(type)) {
+              elementMap.set(type, new Set());
+            }
+            const listenersSet = elementMap.get(type)!;
+            
+            // 중복 등록 확인
+            if (listenersSet.has(listener as EventListener)) {
+              const logger = loggerManager.getLogger('DOMEvents', { enableConsole: false });
+              logger.warn('DOM 이벤트 리스너가 이미 등록됨', {
+                eventType: type,
+                element: this.constructor.name,
+                elementId: (this as any).id || 'unknown',
+                elementClass: (this as any).className || 'unknown',
+                listenerCount: listenersSet.size
+              });
+            } else {
+              listenersSet.add(listener as EventListener);
+            }
+          } catch (e) {
+            // 이벤트 리스너 추적 실패 시 무시
+          }
+        }
+        
+        return originalAddEventListener.call(this, type, listener, options);
+      };
+      
+      // 원본 console.log를 사용하여 설정 완료 메시지 출력
+      originalConsole.log('✅ Remote logging enabled - Only errors and warnings will be sent to server');
+    } catch (error) {
+      console.warn('⚠️ Failed to setup remote logging:', error);
+    }
+  }
 }
 
 // Utility functions remain the same

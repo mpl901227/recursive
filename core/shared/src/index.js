@@ -6,14 +6,10 @@
 // 유틸리티들
 const Logger = require('./utils/Logger');
 
-// 인터페이스들
-const {
-  AIAnalysisInterface,
-  AnalysisResult,
-  COMPLEXITY_LEVELS,
-  ANALYSIS_TYPES,
-  SUPPORTED_LANGUAGES
-} = require('./interfaces/ai-analysis');
+// 클라이언트들
+const LLMClient = require('./clients/llm-client');
+
+// AI 분석 인터페이스는 제거됨 - 직접 구현체 사용
 
 // 설정들
 const websocketConfig = require('./config/websocket.config');
@@ -27,7 +23,9 @@ const EventEmitter = require('events');
 // Log System Integration
 let logSystemModule = null;
 try {
-  logSystemModule = require('../../modules/log-system/src/index');
+  const path = require('path');
+  const logSystemPath = path.resolve(__dirname, '../../../modules/log-system/src/index');
+  logSystemModule = require(logSystemPath);
 } catch (error) {
   console.warn('Log system module not available:', error.message);
 }
@@ -388,12 +386,12 @@ module.exports = {
   // Core utilities
   Logger,
   
-  // AI Analysis interfaces
-  AIAnalysisInterface,
-  AnalysisResult,
-  COMPLEXITY_LEVELS,
-  ANALYSIS_TYPES,
-  SUPPORTED_LANGUAGES,
+  // Clients
+  clients: {
+    LLMClient
+  },
+  
+  // AI Analysis interfaces - 제거됨 (직접 구현체 사용)
   
   // Configuration
   config: globalConfigManager,
